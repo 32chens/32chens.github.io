@@ -499,7 +499,7 @@ facebook_comments:
 # Twikoo
 # https://github.com/imaegoo/twikoo
 twikoo:
-  envId: https://my-twikoo-git-main-32chens.vercel.app/
+  envId: https://mytwikoo.32chens.top #https://my-twikoo-git-main-32chens.vercel.app/
   region: ap-shanghai
   visitor: true
   option:
