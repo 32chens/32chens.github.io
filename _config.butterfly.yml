@@ -576,7 +576,7 @@ messenger:
 
 # Baidu Analytics
 # https://tongji.baidu.com/web/welcome/login
-baidu_analytics:
+baidu_analytics: ee6e9f1fac46eee825c551c649a7fca1
 
 # Google Analytics
 # https://analytics.google.com/analytics/web/
@@ -613,8 +613,8 @@ google_adsense:
 site_verification:
   # - name: google-site-verification
   #   content: xxxxxx
-  # - name: baidu-site-verification
-  #   content: xxxxxxx
+   - name: baidu-site-verification
+     content: codeva-9Xps8w6O1F
 
 # Beautify/Effect (美化/效果)
 # --------------------------------------
