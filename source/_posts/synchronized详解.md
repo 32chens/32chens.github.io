@@ -2,7 +2,7 @@
 title: synchronized详解
 abbrlink: f0baa025
 date: 2023-05-23 21:47:50
-tags:
+tags: "Java并发"
 ---
 
 ### 前置知识
@@ -28,7 +28,7 @@ synchronized(obj){
 
 ![image-20220722103510809](https://hexo-chenlf.oss-cn-shanghai.aliyuncs.com/img/202305241035172.png)
 
-![image-20220722170730689](C:\imgs\image-20220722170730689.png)
+![image-20220722170730689](https://hexo-chenlf.oss-cn-shanghai.aliyuncs.com/img/202305241041663.png)
 
 - 其中Normal表示无锁状态, (一般新建对象的状态)
 - Biased 表示偏向锁状态,其中mardword前23位记录当前持有锁的线程id.
@@ -148,5 +148,5 @@ public synchronized void add(){
 1. 如果没有存活，那么锁对象被重置为无锁状态，其它线程（线程2）可以竞争将其设置为偏向锁（**重偏向**）；
 2. 如果存活，那么立刻查找该线程（线程1）的栈帧信息，如果还是需要继续持有这个锁对象，那么暂停当前线程1，撤销偏向锁，升级为轻量级锁，如果线程1 不再使用该锁对象，那么将锁对象状态设为无锁状态，重新偏向新的线程。
 
-![在这里插入图片描述](C:\imgs\Biased)
+
 
