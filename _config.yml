@@ -122,22 +122,22 @@ search:
   content: true #若为false，则设置不搜索文章内容，只根据搜索标题
   format: html
 
-qiniu:
-    offline: false
-    sync: true
-    bucket: hexo-chenlf
-    # secret_file: sec/qn.json or C:
-    access_key: LGjLwDYFvCr19drh1TolZUT3F2nhX67THbZWOp4C
-    secret_key: UewKt0Ypx7oyLztjdfsN-jwiQ7MAbVVGArwwvkwN
-    dirPrefix: static
-    urlPrefix: http://hexo-chenlf.qiniudn.com/static
-    up_host: http://upload.qiniu.com
-    local_dir: static
-    update_exist: true
-    image: 
-      folder: images
-      extend: 
-    js:
-      folder: js
-    css:
-      folder: css
+# qiniu:
+#     offline: false
+#     sync: true
+#     bucket: hexo-chenlf
+#     # secret_file: sec/qn.json or C:
+#     access_key: LGjLwDYFvCr19drh1TolZUT3F2nhX67THbZWOp4C
+#     secret_key: 
+#     dirPrefix: static
+#     urlPrefix: http://hexo-chenlf.qiniudn.com/static
+#     up_host: http://upload.qiniu.com
+#     local_dir: static
+#     update_exist: true
+#     image: 
+#       folder: images
+#       extend: 
+#     js:
+#       folder: js
+#     css:
+#       folder: css
