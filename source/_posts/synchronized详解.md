@@ -24,7 +24,7 @@ synchronized(obj){
 
 一般而言, 对象头有MarkWord 和 KlassWord(对象类型) 两部分组成,其中MarkWord组成结构（32为系统和64位系统）:
 
-![](https://hexo-chenlf.oss-cn-shanghai.aliyuncs.com/img/202305241035154.jpg)
+![](https://hexo-chenlf.oss-cn-shanghai.aliyuncs.com/img/202305241035154.jpg [对象头])
 
 ![image-20220722103510809](https://hexo-chenlf.oss-cn-shanghai.aliyuncs.com/img/202305241035172.png)
 
