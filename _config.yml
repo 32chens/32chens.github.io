@@ -122,6 +122,12 @@ search:
   content: true #若为false，则设置不搜索文章内容，只根据搜索标题
   format: html
 
+# APlayer
+# https://github.com/MoePlayer/hexo-tag-aplayer/blob/master/docs/README-zh_cn.md
+aplayer:
+  meting: true
+  asset_inject: false
+
 # qiniu:
 #     offline: false
 #     sync: true

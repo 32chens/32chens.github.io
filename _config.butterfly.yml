@@ -865,7 +865,7 @@ pjax:
 
 # Inject the css and script (aplayer/meting)
 aplayerInject:
-  enable: false
+  enable: true
   per_page: true
 
 # Snackbar (Toast Notification 彈窗)
@@ -929,7 +929,16 @@ css_prefix: true
 inject:
   head:
     # - <link rel="stylesheet" href="/xxx.css">
+    ## 星空背景
+    - <link rel="stylesheet" href="/css/universe.css">
+    - <link rel="stylesheet" href="/css/coin.css">
+    - <link rel="stylesheet" href="/css/custom.css"  media="defer" onload="this.media='all'">
   bottom:
+		# 星空背景
+    - <canvas id="universe"></canvas>
+    - <script defer src="/js/universe.js"></script>
+    - <script defer src="/js/coin.js"></script>
+    - <div class="aplayer no-destroy" data-id="986184445" data-server="netease" data-type="playlist" data-fixed="true" data-mini="true" data-listFolded="false" data-order="random" data-preload="none" data-autoplay="false" muted></div>
     # - <script src="xxxx"></script>
 
 # CDN
