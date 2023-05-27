@@ -177,6 +177,7 @@ post_copyright:
 # Sponsor/reward
 reward:
   enable: true
+  coinAudio: https://npm.elemecdn.com/akilar-candyassets@1.0.16/audio/coin.mp3
   QR_code:
      - img: /img/wechat.png
        link:
@@ -184,6 +185,15 @@ reward:
      - img: /img/alipay.png
        link:
        text: alipay
+  CDN:
+    # main
+    main_css: /css/index.css
+    jquery: https://npm.elemecdn.com/jquery@latest/dist/jquery.min.js
+    main: /js/main.js
+    utils: /js/utils.js
+    # 打赏按钮投币效果
+    coin_js: /js/coin.js
+    coin_css: /css/coin.css
 
 # Post edit
 # Easily browse and edit blog source code online.
@@ -716,11 +726,12 @@ click_heart:
 
 # Mouse click effects: words (鼠標點擊效果: 文字)
 ClickShowText:
-  enable: false
+  enable: true
   text:
-    # - I
-    # - LOVE
-    # - YOU
+    - 富强
+    - 民主
+    - 文明
+    - 和谐
   fontSize: 15px
   random: false
   mobile: false
@@ -731,17 +742,17 @@ display_mode: light
 
 # Beautify (美化頁面顯示)
 beautify:
-  enable: false
-  field: post # site/post
-  title-prefix-icon: # '\f0c1'
-  title-prefix-icon-color: # '#F47466'
+  enable: true
+  field: site # site/post
+  title-prefix-icon: '\f0c1'
+  title-prefix-icon-color: '#F47466'
 
 # Global font settings
 # Don't modify the following settings unless you know how they work (非必要不要修改)
 font:
   global-font-size:
   code-font-size:
-  font-family:
+  font-family: "Segoe UI"
   code-font-family:
 
 # Font settings for the site title and site subtitle
@@ -758,25 +769,29 @@ hr_icon:
 
 # the subtitle on homepage (主頁subtitle)
 subtitle:
-  enable: false
+  enable: true
   # Typewriter Effect (打字效果)
   effect: true
-  # Customize typed.js (配置typed.js)
-  # https://github.com/mattboldt/typed.js/#customization
-  typed_option:
+  startDelay: 300 # time before typing starts in milliseconds
+  typeSpeed: 150 # type speed in milliseconds
+  backSpeed: 50 # backspacing speed in milliseconds
+  # loop (循環打字)
+  loop: true
   # source 調用第三方服務
   # source: false 關閉調用
   # source: 1  調用一言網的一句話（簡體） https://hitokoto.cn/
-  # source: 2  調用一句網（簡體） https://yijuzhan.com/
+  # source: 2  調用一句網（簡體） http://yijuzhan.com/
   # source: 3  調用今日詩詞（簡體） https://www.jinrishici.com/
   # subtitle 會先顯示 source , 再顯示 sub 的內容
   source: false
   # 如果關閉打字效果，subtitle 只會顯示 sub 的第一行文字
   sub:
+    - 今日事&#44;今日畢
+    - Never put off till tomorrow what you can do today
 
 # Loading Animation (加載動畫)
 preloader:
-  enable: false
+  enable: true
   # source
   # 1. fullpage-loading
   # 2. pace (progress bar)
@@ -787,7 +802,7 @@ preloader:
 # wordcount (字數統計)
 # see https://butterfly.js.org/posts/ceeb73f/#字數統計
 wordcount:
-  enable: false
+  enable: true
   post_wordcount: true
   min2read: true
   total_wordcount: true
@@ -870,7 +885,7 @@ instantpage: false
 # https://github.com/vinta/pangu.js
 # Insert a space between Chinese character and English character (中英文之間添加空格)
 pangu:
-  enable: false
+  enable: true
   field: site # site/post
 
 # Lazyload (圖片懶加載)
