@@ -257,7 +257,7 @@ aside:
       link: https://github.com/32chens
   card_announcement:
     enable: true
-    content:  "欢迎来到  文西 de博客 即便现实远不如梦想美好，我亦心生向往，静静追逐。"
+    content:  欢迎来到 文西 的博客<br> 即便现实远不如梦想美好，我亦心生向往，静静追逐。
   card_recent_post:
     enable: true
     limit: 5 # if set 0 will show all
@@ -858,7 +858,7 @@ note:
 # It may contain bugs and unstable, give feedback when you find the bugs.
 # https://github.com/MoOx/pjax
 pjax:
-  enable: false
+  enable: true
   exclude:
     # - xxxx
     # - xxxx
