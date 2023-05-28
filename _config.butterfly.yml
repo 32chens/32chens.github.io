@@ -170,7 +170,7 @@ toc:
 post_copyright:
   enable: true
   decode: false
-  author_href:
+  author_href: https://32chens.top/about/
   license: CC BY-NC-SA 4.0
   license_url: https://creativecommons.org/licenses/by-nc-sa/4.0/
 
@@ -231,7 +231,7 @@ footer:
   owner:
     enable: true
     since: 2023
-  custom_text: Hi, welcome to my <a href="https://32chens.github.io/">blog</a>!
+  custom_text: Hi, welcome to my <a href="https://32chens.top/">blog</a>!
   copyright: true # Copyright of theme and framework
 
 # aside (側邊欄)
@@ -257,7 +257,8 @@ aside:
       link: https://github.com/32chens
   card_announcement:
     enable: true
-    content: This is my Blog
+    content:  欢迎来到  文西 博客
+即便现实远不如梦想美好，我亦心生向往，静静追逐。
   card_recent_post:
     enable: true
     limit: 5 # if set 0 will show all
@@ -752,7 +753,7 @@ beautify:
 font:
   global-font-size:
   code-font-size:
-  font-family: "Segoe UI"
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Lato, Roboto, "PingFang SC", "Microsoft JhengHei", "Microsoft YaHei", sans-serif
   code-font-family:
 
 # Font settings for the site title and site subtitle
@@ -786,7 +787,7 @@ subtitle:
   source: false
   # 如果關閉打字效果，subtitle 只會顯示 sub 的第一行文字
   sub:
-    - 今日事&#44;今日畢
+    - 今日事&#44; 今日毕
     - Never put off till tomorrow what you can do today
 
 # Loading Animation (加載動畫)
@@ -1019,3 +1020,23 @@ CDN:
     # artalk_css:
     # busuanzi:
     # abcjs_basic_js:
+
+## 留言板
+envelope_comment:
+  enable: true #控制开关
+  custom_pic:      
+    cover: https://npm.elemecdn.com/hexo-butterfly-envelope/lib/violet.jpg #信笺头部图片
+    line: https://npm.elemecdn.com/hexo-butterfly-envelope/lib/line.png #信笺底部图片
+    beforeimg: https://npm.elemecdn.com/hexo-butterfly-envelope/lib/before.png # 信封前半部分
+    afterimg: https://npm.elemecdn.com/hexo-butterfly-envelope/lib/after.png # 信封后半部分
+  message: #信笺正文，多行文本，写法如下
+    - 有什么想问的？
+    - 有什么想说的？
+    - 有什么想吐槽的？
+    - 哪怕是有什么想吃的，都可以告诉我哦~
+  bottom: 自动书记人偶竭诚为您服务！ #仅支持单行文本
+  height: #1050px，信封划出的高度
+  path: messages #【可选】comments 的路径名称。默认为 comments，生成的页面为 comments/index.html
+  front_matter: #【可选】comments页面的 front_matter 配置
+    title: 留言板
+    comments: true
