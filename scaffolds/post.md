@@ -4,7 +4,7 @@ date: {{ date }}
 author: chenlf
 tags:
   -
-categories:
+categories: 
   -
-katex： true
+katex: true
 ---
