@@ -140,7 +140,7 @@ InnoDB 使用会话临时表空间和全局临时表空间。存储用户创建�
 
 ### 双写缓冲区（Doublewrite Buffer Files）
 
-innoDB引擎将数据页从Buffer Pool刷新到磁盘前，先将数据页写入双写缓冲区文件中，便于系统异常时恢复数据。
+innoDB引擎将数据页从Buffer Pool刷新到磁盘前，先将数据页写入双写缓冲区文件中，便于系统异常时恢复数据。主要内容看这个[double write](https://www.cnblogs.com/geaozhang/p/7241744.html )
 
 ![image-20230604170715099](https://hexo-chenlf.oss-cn-shanghai.aliyuncs.com/img/202306041707122.png)
 
