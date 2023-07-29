@@ -2,9 +2,9 @@
 title: MySQL面试题
 author: chenlf
 tags:
-  - MySQL, 面试题
+  - MySQL,面试题
 categories:
-  - 数据库, 面试题
+  - 数据库,面试题
 katex: true
 date: 2023-06-05 10:13:58
 ---
