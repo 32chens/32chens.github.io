@@ -2,10 +2,11 @@
 title: redis面试题
 author: chenlf
 tags:
-  - Redis,面试题
+  - 'Redis,面试题'
 categories:
-  - 数据库,面试题
+  - '数据库,面试题'
 katex: true
+abbrlink: 60d95ce8
 date: 2023-07-29 22:10:10
 ---
 
@@ -25,7 +26,7 @@ date: 2023-07-29 22:10:10
 
 这三种情况都可以通过添加降级限流策略来缓解
 
-{% tabs test4, 1 %}
+{% tabs test4 %}
 
 <!-- tab 缓存穿透 -->
 
@@ -98,7 +99,7 @@ redis提供了两种过期策略，惰性过期和定期过期
 
 {% hideToggle 假如缓存过多，内存是有限的，内存被占满了怎么办？(淘汰策略) %}
 
-{% tabs %}
+{% tabs test %}
 
 <!-- tab 回答 -->
 
@@ -131,6 +132,6 @@ volatile-lfu： 对设置了TTL的key，基于LFU算法进行淘汰
 
 ### 分布式锁
 
-{% hideToggle display,bg,color %}
+{% hideToggle display %}
 content
 {% endhideToggle %}
