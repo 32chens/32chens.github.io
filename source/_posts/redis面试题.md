@@ -125,7 +125,7 @@ volatile-lfu： 对设置了TTL的key，基于LFU算法进行淘汰
 
 {% endtabs %}
 
-{% endToggle %}
+{% endhideToggle %}
 
 
 
