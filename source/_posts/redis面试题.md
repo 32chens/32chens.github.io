@@ -66,7 +66,11 @@ date: 2023-07-29 22:10:10
 - 其他最终一致性解决方案：阿里的canal中间件，部署一个canal服务，canal把自己伪装成MySQL的一个从节点，当MySQL数据更新后，canal读取binlog日志，然后通过canal的客户端获取到的数据更新缓存即可
 - 如果要保证强一致性那么要么可以使用redisson的读写锁
 
-{% endhideToggle redis做为缓存，数据的持久化是怎么做的? %}
+{% endhideToggle %}
+
+
+
+{% hideToggle redis做为缓存，数据的持久化是怎么做的? %}
 
 redis中提供了两种持久化方案，RDB和AOF，RDB是备份当前时刻的快照数据写到磁盘，AOF是记录写命令，执行bgrewriteaof命令，可以让AOF文件执行重写功能
 
@@ -122,6 +126,8 @@ volatile-lfu： 对设置了TTL的key，基于LFU算法进行淘汰
 {% endtabs %}
 
 {% endToggle %}
+
+
 
 ### 分布式锁
 
