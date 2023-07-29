@@ -2,9 +2,11 @@
 title: redis面试题
 author: chenlf
 tags:
-  - 'Redis,面试题'
+  - 'Redis'
+  - 面试题
 categories:
-  - '数据库,面试题'
+  - '数据库'
+  - 面试题
 katex: true
 abbrlink: 60d95ce8
 date: 2023-07-29 22:10:10
@@ -22,7 +24,7 @@ date: 2023-07-29 22:10:10
 
 ### 缓存
 
-{% hideToggle 如果发生了缓存穿透、击穿、雪崩，该如何解决 %}
+{% hideToggle ❤️如果发生了缓存穿透、击穿、雪崩，该如何解决 %}
 
 这三种情况都可以通过添加降级限流策略来缓解
 
@@ -32,7 +34,7 @@ date: 2023-07-29 22:10:10
 
 - 缓存穿透是客户端请求了一个不存在的数据，在redis缓存中，就会去查询数据库重建缓存，但是因为数据不存在，所以没办法写入缓存，就会导致每次查询都访问数据，所以就有了被人开启大量线程访问，数据库被大量访问崩溃的风险
 - 解决方案一：存空对象，如果数据库查询不存在那就将空对象存入redis，那么下一次查询就不会进入数据库查询，缺点是内存消耗较大
-- 解决方案二：布隆过滤器，布隆过滤器采用位图，存储和查询都是将key经过三次hash，将每次的结果设置为1和比较是否为1，如果都为1则认为redis有数据，放行查询redis，否则拒绝访问，所以布隆过滤器需要在redis预热的时候就初始化好，同时布隆过滤器有一定的误判的概率，一般这个位图的越大，概率越小，所以我们可以设置误判的概率，一般是5%就比较合适，既满足系统可接受的程度，又不会有太大的内存消耗
+- 解决方案二：布隆过滤器，布隆过滤器采用位图，存储和查询都是将key经过三次hash，将每次的结果设置为1和比较是否为1，如果都为1则认为redis有数据，放行查询redis，否则拒绝访问，所以布隆过滤器需要在redis缓存预热时，预热布隆过滤器，同时布隆过滤器有一定的误判的概率，一般这个位图的越大，概率越小，所以我们可以设置误判的概率，一般是5%就比较合适，既满足系统可接受的程度，又不会有太大的内存消耗
 
 <!-- endtab -->
 
@@ -59,7 +61,9 @@ date: 2023-07-29 22:10:10
 
 
 
-{% hideToggle redis做为缓存，mysql的数据如何与redis进行同步呢？（双写一致性） %}
+
+
+{% hideToggle ❤️redis做为缓存，mysql的数据如何与redis进行同步呢？（双写一致性） %}
 
 > 一定、一定、一定要设置前提，先介绍自己的**业务背景**
 
@@ -71,15 +75,15 @@ date: 2023-07-29 22:10:10
 
 
 
-{% hideToggle redis做为缓存，数据的持久化是怎么做的? %}
+{% hideToggle ❤️redis做为缓存，数据的持久化是怎么做的? %}
 
-redis中提供了两种持久化方案，RDB和AOF，RDB是备份当前时刻的快照数据写到磁盘，AOF是记录写命令，执行bgrewriteaof命令，可以让AOF文件执行重写功能
+redis中提供了两种持久化方案，RDB和AOF，RDB是备份当前时刻的快照数据写到磁盘，AOF是记录写命令，执行bgrewriteaof命令，可以让AOF文件执行重写功能，其中RDB是二进制文件保存时体积小，恢复快，但是有可能丢失数据，AOF虽然恢复慢，但是丢失数据风险小
 
 {% endhideToggle %}
 
 
 
-{% hideToggle 假如redis的key过期之后，会立即删除吗？(过期策略) %}
+{% hideToggle ❤️假如redis的key过期之后，会立即删除吗？(过期策略) %}
 
 redis提供了两种过期策略，惰性过期和定期过期
 
@@ -97,7 +101,7 @@ redis提供了两种过期策略，惰性过期和定期过期
 
 
 
-{% hideToggle 假如缓存过多，内存是有限的，内存被占满了怎么办？(淘汰策略) %}
+{% hideToggle ❤️假如缓存过多，内存是有限的，内存被占满了怎么办？(淘汰策略) %}
 
 {% tabs %}
 
@@ -132,6 +136,69 @@ volatile-lfu： 对设置了TTL的key，基于LFU算法进行淘汰
 
 ### 分布式锁
 
-{% hideToggle display %}
-content
+{% hideToggle ❤️redis分布式锁，是如何实现的？%}
+{% tabs %}
+
+<!-- tab 回答 -->
+
+redis分布式锁在我的项目中是为了解决tomcat集群情况下，避免优惠券超卖的问题，redis实现分布式锁主要是利用了redis的{% label setnx red %}命令，这种方案需要我们自己实现线程对比或者**锁续期（看门狗）**，避免锁被其他线程误删
+
+另一种redisson分布式锁方案（底层是setnx和lua脚本），引入看门狗机制对锁续期，未获得锁的线程自旋尝试加锁，一般使用他的可重入锁即可，如果是redis集群情况下，他是通过hash算法找到对应的一台redis执行lua脚本加锁，但是如果是redis主从结构就有可能主库宕机，从库变成主库，此时锁丢失，其他线程又可以加锁造成多线程问题，解决这种问题就是使用redisson的红锁（效率差，非要保证数据的强一致性，建议采用zookeeper），红锁的实现原理是对多个主节点setnx，只有超过一半的节点写成功才算成功加锁，这样即使有一台redis主节点宕机，那么其他线程永远不可能写入超过一般的节点
+
+<!-- endtab -->
+
+<!-- tab redisson -->
+
+[redisson原理](https://www.cnblogs.com/xing1/p/16367129.html)
+
+[redisson原理](https://www.cnblogs.com/riversDrift/p/12864880.html)
+
+[主从架构分布式锁失效](https://blog.csdn.net/SHU15121856/article/details/117373966)
+
+<!-- endtab -->
+
+{% endtabs %}
+
+{% endhideToggle %}
+
+
+
+# 其他面试题
+
+{% hideToggle ❤️Redis集群有哪些方案, 知道嘛 %}
+
+主从复制
+哨兵模式
+分片集群
+
+{% endhideToggle %}
+
+
+
+{% hideToggle ❤️redis主从数据同步的流程是什么？ %}
+
+{% endhideToggle %}
+
+
+
+{% hideToggle ❤️怎么保证redis的高并发高可用？ %}
+
+{% endhideToggle %}
+
+
+
+{% hideToggle ❤️你们使用redis是单点还是集群，哪种集群？ %}
+
+{% endhideToggle %}
+
+
+
+{% hideToggle ❤️Redis分片集群中数据是怎么存储和读取的？ %}
+
+{% endhideToggle %}
+
+
+
+{% hideToggle ❤️edis集群脑裂，该怎么解决呢？ %}
+
 {% endhideToggle %}
