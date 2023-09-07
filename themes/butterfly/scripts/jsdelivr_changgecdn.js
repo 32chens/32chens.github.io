@@ -5,7 +5,7 @@ const { filter } = hexo.extend;
 filter.register('before_generate', () => {
     const { asset } = hexo.theme.config;
     for (const name in asset) {
-        if(asset[name].indexOf("fancybox") != -1){
+        if(asset[name].indexOf("fancybox") != -1 || asset[name].indexOf("click-show-text.min") != -1){
             continue;
         } 
         asset[name] = asset[name].replace('//cdn.jsdelivr.net/npm/', '//npm.elemecdn.com/');
