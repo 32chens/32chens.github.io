@@ -62,16 +62,16 @@ function common_injector(name, item_comfig, temple_html_text, js_text, css_text)
     }
 }
 
-hexo.extend.filter.register('after_generate',function() {
-    if(hexo.config.butterfly_article_double_row_new.enable){
-        var butterfly_article_double_row_comfig = hexo.config.butterfly_article_double_row_new;
-        var css_text =`<link rel="stylesheet" href="https://haorblog.adhy.cc/blogimg/cardlistpost.min.css"/>
-<style>#recent-posts > .recent-post-item >.recent-post-info > .article-meta-wrap > .tags:before {content:"\\A";
-  white-space: pre;}#recent-posts > .recent-post-item >.recent-post-info > .article-meta-wrap > .tags > .article-meta__separator{display:none}</style>
-`
+// hexo.extend.filter.register('after_generate',function() {
+//     if(hexo.config.butterfly_article_double_row_new.enable){
+//         var butterfly_article_double_row_comfig = hexo.config.butterfly_article_double_row_new;
+//         var css_text =`<link rel="stylesheet" href="https://haorblog.adhy.cc/blogimg/cardlistpost.min.css"/>
+// <style>#recent-posts > .recent-post-item >.recent-post-info > .article-meta-wrap > .tags:before {content:"\\A";
+//   white-space: pre;}#recent-posts > .recent-post-item >.recent-post-info > .article-meta-wrap > .tags > .article-meta__separator{display:none}</style>
+// `
 
-        // common_injector('butterfly_article_double_row', butterfly_article_double_row_comfig, '', '', css_text)
-    }
+//         // common_injector('butterfly_article_double_row', butterfly_article_double_row_comfig, '', '', css_text)
+//     }
 
 
-})
+// })
