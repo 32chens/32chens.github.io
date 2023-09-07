@@ -5,6 +5,9 @@ const { filter } = hexo.extend;
 filter.register('before_generate', () => {
     const { asset } = hexo.theme.config;
     for (const name in asset) {
+        if(asset[name].indexOf("fancybox")){
+            continue;
+        } 
         asset[name] = asset[name].replace('//cdn.jsdelivr.net/npm/', '//npm.elemecdn.com/');
         //asset[name] = asset[name].replace('https://cdn.jsdelivr.net/gh/Zfour/Butterfly-double-row-display@1.00/cardlistpost.min.css', 'https://haorblog.adhy.cc/blogimg/cardlistpost.min.css');
     }
