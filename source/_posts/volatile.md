@@ -67,6 +67,50 @@ date: 2023-09-08 20:17:45
 
 
 
+### volatile的使用场景
+
+根据上面的例子可以发现，只有像`i=1`这种赋值的原子性操作才能保证volatile变量的原子性，所以volatile的使用场景有以下两种：
+
+**1.状态标记量**
+
+使用volatile来修饰状态标记量，使得状态标记量对所有线程是实时**可见**的，从而保证所有线程都能实时获取到最新的状态标记量，进一步决定是否进行操作。例如常见的促销活动“秒杀”，可以用volatile来修饰“是否售罄”字段，从而保证在并发下，能正确的处理商品是否罄。
+
+```java
+volatile boolean flag = false;
+while (!flag) {
+    doSomething();
+}
+public void setFlag() {
+    flag = true;
+}
+```
+
+**2.双重检测机制实现单例**
+
+普通的双重检测机制在极端情况，由于指令重排序会出现问题（new Singleton()不是原子性操作，会发生重排序），通过使用volatile来修饰instance，禁止指令重排序，从而可以正确的实现单例。
+```java
+class Singleton{
+    private volatile static Singleton instance = null;
+     
+    private Singleton() {   
+    }
+     
+    public static Singleton getInstance() {
+        if(instance==null) {
+            synchronized (Singleton.class) {
+                if(instance==null)
+                    instance = new Singleton();
+            }
+        }
+        return instance;
+    }
+}
+```
+
+
+
+
+
 ### 引用
 
 [为什么volatile能保证有序性不能保证原子性](https://www.cnblogs.com/simpleDi/p/11517150.html)
