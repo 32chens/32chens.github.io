@@ -1,7 +1,10 @@
 ---
 title: JVM基础-1-类字节码详解
 tags: JVM
+categories:
+  - Java
 abbrlink: eb343e98
+author: chenlf
 date: 2023-05-25 14:41:45
 ---
 

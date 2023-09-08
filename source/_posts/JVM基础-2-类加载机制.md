@@ -4,7 +4,7 @@ author: chenlf
 tags:
   - JVM
 categories:
-  - java
+  - Java
 katex: true
 abbrlink: f7b71cf8
 date: 2023-06-01 10:31:39
