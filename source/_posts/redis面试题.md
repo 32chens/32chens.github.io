@@ -3,10 +3,10 @@ title: redis面试题
 author: chenlf
 tags:
   - 'Redis'
-  - 面试题
+  - '面试题'
 categories:
   - '数据库'
-  - 面试题
+  - '面试题'
 katex: true
 abbrlink: 60d95ce8
 date: 2023-07-29 22:10:10
