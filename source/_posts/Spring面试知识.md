@@ -192,9 +192,9 @@ bean 的生命周期从调用 beanFactory 的 getBean 开始，到这个 bean �
 2. 处理父子容器
 3. 处理 dependsOn
 4. 选择 scope 策略
-5. {% label 创建 bean red %}
+5. {% label 创建bean red %}
 6. 类型转换处理
-7. {% label 销毁 bean red %}
+7. {% label 销毁bean red %}
 
 > ***注意***
 >
