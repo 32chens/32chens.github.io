@@ -57,7 +57,7 @@ refresh 是 AbstractApplicationContext 中的一个方法，负责初始化 Appl
 >
 > * 11 为初始化 BeanFactory 中非延迟单例 bean
 
-
+{% hideToggle 详细流程 %}
 
 **1. prepareRefresh**
 
@@ -176,7 +176,7 @@ refresh 是 AbstractApplicationContext 中的一个方法，负责初始化 Appl
 
 ![image-20210902185052433](https://hexo-chenlf.oss-cn-shanghai.aliyuncs.com/img/202309142100950.png)
 
-
+{% endhideToggle %}
 
 ## 2. Spring bean 生命周期
 
@@ -214,6 +214,8 @@ bean 的生命周期从调用 beanFactory 的 getBean 开始，到这个 bean �
 
 - **调用xxxAware接口** (上图只是给了几个例子) 
 
+{% hideToggle Aware接口 %}
+
 - 第一类Aware接口
   - 如果 Bean 实现了 BeanNameAware 接口，则 Spring 调用 Bean 的 setBeanName() 方法传入当前 Bean 的 id 值。
   - 如果 Bean 实现了 BeanClassLoaderAware 接口，则 Spring 调用 setBeanClassLoader() 方法传入classLoader的引用。
@@ -223,6 +225,8 @@ bean 的生命周期从调用 beanFactory 的 getBean 开始，到这个 bean �
   - 如果 Bean 实现了 EmbeddedValueResolverAware 接口，则 Spring 调用 setEmbeddedValueResolver() 方法传入当前 StringValueResolver 实例的引用。
   - 如果 Bean 实现了 ApplicationContextAware 接口，则 Spring 调用 setApplicationContext() 方法传入当前 ApplicationContext 实例的引用。
   - ...
+
+{% endhideToggle %}
 
 - 如果 {% label BeanPostProcessor green %}和 Bean 关联，则 Spring 将调用该**接口**的预初始化方法 `postProcessBeforeInitialzation() `对 Bean 进行加工操作，此处非常重要，Spring 的 AOP 就是利用它实现的。
 - 如果 Bean 实现了 `InitializingBean` 接口，则 Spring 将调用 `afterPropertiesSet()` 方法。(或者有执行@PostConstruct注解的方法)
