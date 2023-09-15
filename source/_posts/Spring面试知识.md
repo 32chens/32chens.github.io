@@ -35,7 +35,7 @@ refresh 是 AbstractApplicationContext 中的一个方法，负责初始化 Appl
 
 6. registerBeanPostProcessors       从 beanFactory 中找出 bean 后处理器，添加至 beanPostProcessors 集合中
 
-7. initMessageSource                      创建国际化第项
+7. initMessageSource                      创建国际化对象
 
 8. initApplicationEventMulticaster    创建事件广播器
 

@@ -129,7 +129,7 @@ aplayer:
   asset_inject: false
 
 lazyload:
-  enable: true
+  enable: false
   loadingImg: /img/loading.gif
 
 
