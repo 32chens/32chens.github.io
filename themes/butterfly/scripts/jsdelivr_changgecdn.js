@@ -2,18 +2,19 @@
 const { filter } = hexo.extend;
 
 // 替换 CDN
-filter.register('before_generate', () => {
-    const { asset } = hexo.theme.config;
-    for (const name in asset) {
-        if(asset[name].indexOf("fancybox") != -1 || asset[name].indexOf("click-show-text.min") != -1){
-            continue;
-        } 
-        asset[name] = asset[name].replace('//cdn.jsdelivr.net/npm/', '//npm.elemecdn.com/');
-        //asset[name] = asset[name].replace('https://cdn.jsdelivr.net/gh/Zfour/Butterfly-double-row-display@1.00/cardlistpost.min.css', 'https://haorblog.adhy.cc/blogimg/cardlistpost.min.css');
-    }
-    //const { blog_cdn } = hexo.config.butterfly_article_double_row
-    //hexo.config.butterfly_article_double_row = blog_cdn.replace('https://cdn.jsdelivr.net/gh/Zfour/Butterfly-double-row-display@1.00/cardlistpost.min.css', 'https://haorblog.adhy.cc/blogimg/cardlistpost.min.css');
-}, 11);
+// filter.register('before_generate', () => {
+//     const { asset } = hexo.theme.config;
+//     for (const name in asset) {
+//         // asset[name].indexOf("fancybox") != -1 ||
+//         if(asset[name].indexOf("click-show-text.min") != -1){
+//             continue;
+//         } 
+//         asset[name] = asset[name].replace('//cdn.jsdelivr.net/npm/', '//npm.elemecdn.com/');
+//         //asset[name] = asset[name].replace('https://cdn.jsdelivr.net/gh/Zfour/Butterfly-double-row-display@1.00/cardlistpost.min.css', 'https://haorblog.adhy.cc/blogimg/cardlistpost.min.css');
+//     }
+//     //const { blog_cdn } = hexo.config.butterfly_article_double_row
+//     //hexo.config.butterfly_article_double_row = blog_cdn.replace('https://cdn.jsdelivr.net/gh/Zfour/Butterfly-double-row-display@1.00/cardlistpost.min.css', 'https://haorblog.adhy.cc/blogimg/cardlistpost.min.css');
+// }, 11);
 
 //通用注入器
 //name 注入插件名称

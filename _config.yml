@@ -128,6 +128,11 @@ aplayer:
   meting: true
   asset_inject: false
 
+lazyload:
+  enable: true
+  loadingImg: /img/loading.gif
+
+
 # qiniu:
 #     offline: false
 #     sync: true

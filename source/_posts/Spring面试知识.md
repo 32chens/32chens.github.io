@@ -178,6 +178,8 @@ refresh 是 AbstractApplicationContext 中的一个方法，负责初始化 Appl
 
 {% endhideToggle %}
 
+
+
 ## 2. Spring bean 生命周期
 
 **要求**
