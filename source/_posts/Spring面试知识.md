@@ -206,14 +206,13 @@ bean 的生命周期从调用 beanFactory 的 getBean 开始，到这个 bean �
 
 <!-- tab bean的创建和销毁 -->
 
-![img](https://hexo-chenlf.oss-cn-shanghai.aliyuncs.com/img/202309142110022.png)
+![img](https://hexo-chenlf.oss-cn-shanghai.aliyuncs.com/img/202309151703189.png)
 
 - 如果 BeanFactoryPostProcessor 和 Bean 关联, 则调用`postProcessBeanFactory`方法.(即首**先尝试从Bean工厂中获取Bean**, 也就是第2步父子容器, 子容器优先查找)
 - 如果 {% label InstantiationAwareBeanPostProcessor green %} 和 Bean 关联，则调用`postProcessBeforeInstantiation`方法
 - 根据配置情况调用 Bean 构造方法**实例化 Bean**。
-- 利用依赖注入完成 Bean 中所有**属性值的配置注入**。
 - 如果 {% label InstantiationAwareBeanPostProcessor green %}和 Bean 关联，则调用`postProcessAfterInstantiation`方法和`postProcessProperties`方法
-
+- 利用依赖注入完成 Bean 中所有**属性值的配置注入**。
 - **调用xxxAware接口** (上图只是给了几个例子) 
 
 {% hideToggle Aware接口 %}
@@ -233,7 +232,7 @@ bean 的生命周期从调用 beanFactory 的 getBean 开始，到这个 bean �
 - 如果 {% label BeanPostProcessor green %}和 Bean 关联，则 Spring 将调用该**接口**的预初始化方法 `postProcessBeforeInitialzation() `对 Bean 进行加工操作，此处非常重要，Spring 的 AOP 就是利用它实现的。
 - 如果 Bean 实现了 `InitializingBean` 接口，则 Spring 将调用 `afterPropertiesSet()` 方法。(或者有执行@PostConstruct注解的方法)
 - 如果在配置文件中通过 **init-method** 属性指定了初始化方法，则调用该初始化方法。
-- 如果  {% label BeanPostProcessor green %}和 Bean 关联，则 Spring 将调用该接口的初始化方法 `postProcessAfterInitialization()`。此时，Bean 已经可以被应用系统使用了。
+- 如果  {% label BeanPostProcessor green %}和 Bean 关联，则 Spring 将调用该接口的初始化方法 `postProcessAfterInitialization()`（AOP代理这里处理）。此时，Bean 已经可以被应用系统使用了。
 - 如果在 `<bean>` 中指定了该 Bean 的作用范围为 scope="singleton"，则将该 Bean 放入 Spring IoC 的缓存池中，将触发 Spring 对该 Bean 的生命周期管理；如果在 `<bean>` 中指定了该 Bean 的作用范围为 scope="prototype"，则将该 Bean 交给调用者，调用者管理该 Bean 的生命周期，Spring 不再管理该 Bean。
 - 如果 Bean 实现了 DisposableBean 接口，则 Spring 会调用 destory() 方法将 Spring 中的 Bean 销毁；(或者有执行@PreDestroy注解的方法)
 - 如果在配置文件中通过 **destory-method** 属性指定了 Bean 的销毁方法，则 Spring 将调用该方法对 Bean 进行销毁
@@ -365,7 +364,7 @@ bean 的生命周期从调用 beanFactory 的 getBean 开始，到这个 bean �
 
 <img src="https://hexo-chenlf.oss-cn-shanghai.aliyuncs.com/img/202309142100575.png" alt="image-20210903085906315" style="zoom: 50%;" />
 
-**构造循环依赖的解决**
+**构造循环依赖的解决**（通过代理的方法）
 
 * 思路1
   * a 注入 b 的代理对象，这样能够保证 a 的流程走通
@@ -645,7 +644,7 @@ public class App60_4 {
 
 ![image-20210903103628639](https://hexo-chenlf.oss-cn-shanghai.aliyuncs.com/img/202309142100970.png)
 
-简单分析的话，只需要将代理的创建时机放在依赖注入之前即可，但 spring 仍然希望代理的创建时机在 init 之后，只有出现循环依赖时，才会将代理的创建时机提前。所以解决思路稍显复杂：
+简单分析的话，只需要将代理的创建时机放在依赖注入之前即可，但 spring 仍然希望代理的创建时机在 init 初始化之后（没有循环依赖的话postProcessAfterInitialization方法AOP创建代理对象），只有出现循环依赖时，才会将代理的创建时机提前。所以解决思路稍显复杂：
 
 * 图中 `factories.put(fa)` 放入的既不是原始对象，也不是代理对象而是工厂对象 fa
 * 当检查出发生循环依赖时，fa 的产品就是代理 pa，没有发生循环依赖，fa 的产品是原始对象 a
@@ -655,6 +654,20 @@ public class App60_4 {
 * `a.init` 完成后，无需二次创建代理，从哪儿找到 pa 呢？earlySingletonObjects 已经缓存，蓝色箭头 9
 
 当成品对象产生，放入 singletonObject 后，singletonFactories 和 earlySingletonObjects 就中的对象就没有用处，清除即可
+
+
+
+所以Spring为了解决有代理的循环依赖采用了三级缓存
+
+- singletonObjects：一级缓存，用于存放完全初始化好的 bean，从该缓存中取出的 bean 可以直接使用
+- earlySingletonObjects：二级缓存，提前曝光的单例对象的cache，存放原始的 bean 对象（尚未填充属性）或者代理对象，用于解决循环依赖
+- singletonFactories：三级缓存，单例对象工厂的cache，存放 bean 工厂对象，用于解决循环依赖
+
+Spring三级缓存使用流程：
+
+​	首先获取bean的流程是从一二级缓存找有没有A的成品或者半成品对象，没有则从三级缓存找工厂对象，如果工厂对象存在则将工厂对象创建的对象放入二级缓存。
+
+​	当A没有找到bean，则自己实例化并判断是否有循环依赖，有则创建A的工厂对象放入三级缓存中，之后属性赋值阶段，查找B对象，三个缓存找不到B对象，则B对象自己实例化，并判断是否有循环依赖，有则创建B的工厂对象放入三级缓存中，之后属性赋值阶段，查找A对象，一二级缓存没有找不到，三级缓存则可以找到A的工厂对象，A的工厂对象创建A的代理对象并放入二级缓存，B的依赖注入成功，完成初始化和代理后放入一级缓存，此时A可以完成属性注入，之后完成初始化放入一级缓存
 
 
 
