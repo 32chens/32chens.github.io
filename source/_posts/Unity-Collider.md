@@ -46,7 +46,7 @@ void OnTriggerExit(Collider other)
 
 **2）回调参数**
     
-碰撞器回调方法的 {% label Collision yellow %}参数
+碰撞器回调方法的 {% label Collision blue%}参数
 
 ```c#
 // 碰撞对象的碰撞体组件
@@ -60,7 +60,7 @@ Collider thisCollider = contactPoint[0].thisCollider;
 Collider otherCollider = contactPoint[0].otherCollider;
 ```
 
-触发器回调方法的 {% label Collider yellow %}参数
+触发器回调方法的 {% label Collider blue%}参数
 
 ```c#
 // 获取碰撞体的MeshRenderer组件

@@ -31,7 +31,7 @@ class ConstTestMain
 }
 ```
 
-- const只能用来修饰基本数据类型、字符串类型、同为const的变量。
+- **const只能用来修饰基本数据类型、字符串类型、同为const的变量。**
 - const修饰的变量不能再用`static`变量进行修饰，并且其只能在字段的声明中初始化，const的原理是在编译期直接对变量值进行替换的。所以虽然他没有被`static`变量修饰，但他还是一个静态变量可以被`类名.`直接调用
 
 <!-- endtab -->
@@ -57,7 +57,7 @@ int a;	//默认值为0
 int? b;	//默认值为null
 ```
 
-**Null 合并运算符（？？）**为类型转换定义了一个预设值，以防可空类型的值为 Null
+**Null合并运算符(??)**为类型转换定义了一个预设值，以防可空类型的值为 Null
 
 ```c#
 double? num1 = null;
@@ -68,6 +68,10 @@ double num3 = num1 ?? 5.34;      // num1 如果为空值则返回 5.34
 
 ### 二维数组
 
+{% tabs %}
+
+<!-- tab C# -->
+
 ```c#
 int[,] arr2 = new int[3, 3];
 int[,] arr3 = new int[3, 3] { { 1, 2, 3 }, 
@@ -76,7 +80,31 @@ int[,] arr3 = new int[3, 3] { { 1, 2, 3 },
 int[,] arr4 = new int[,] { { 1, 2, 3 },
                            { 4, 5, 6 },
                            { 7, 8, 9 } };
+
+
+//交错数组
+int[][] arr5 = new int[][] { { 1, 2, 3 },
+                           { 4, 5 },
+                           { 7} };
 ```
+
+<!-- endtab -->
+
+<!-- tab Java -->
+
+```java
+int[][] arr2 = new int[3][3];
+int[][] arr3 = new int[3][3] { { 1, 2, 3 }, 
+                              { 4, 5, 6 }, 
+                              { 7, 8, 9 } };
+int[][] arr4 = new int[][] { { 1, 2, 3 },
+                           { 4, 5, 6 },
+                           { 7, 8, 9 } };
+```
+
+<!-- endtab -->
+
+{% endtabs %}
 
 
 
@@ -139,7 +167,7 @@ public static void test(Object...objects){
 
 <!-- tab 使用 -->
 
-在 C# 中，结构体是值类型数据结构。它使得一个单一变量可以存储各种数据类型的相关数据。
+在 C# 中，结构体是**值类型**数据结构。它使得一个单一变量可以存储各种数据类型的相关数据。
 
 ```c#
 using System;
@@ -209,7 +237,7 @@ Book 2 book_id : 6495700
 <!-- tab 特点 -->
 
 - 结构可带有方法、字段、索引、属性、运算符方法和事件。
-- 结构可定义构造函数，但不能定义析构函数。但是，您不能为结构定义无参构造函数。无参构造函数(默认)是自动定义的，且不能被改变。
+- 结构可定义构造函数，但不能定义析构函数。但是，您不能为结构体定义无参构造函数。无参构造函数(默认)是自动定义的，且不能被改变。
 - 与类不同，结构不能继承其他的结构或类。
 - 结构不能作为其他结构或类的基础结构。
 - 结构可实现一个或多个接口。
@@ -307,7 +335,7 @@ namespace Test
 C#的特性类似与Java的注解，它分为*两种类型的特性：**预定义**特性和**自定义**特性。*其中预定义特性:
 
 - AttributeUsage
-- Conditional
+- Conditional  修饰条件方法，按条件编译
 - Obsolete    标记过时
 
 AttributeUsage类似于Java的元注解, 语法：
@@ -397,6 +425,7 @@ public class DeBugInfo : System.Attribute
 
 ```c#
 System.Reflection.MemberInfo info = typeof(MyClass);
+Type type = typeof(Rectangle);
 ```
 
 **System.Reflection** 类的 **MemberInfo** 对象需要被初始化，用于发现与类相关的特性（attribute）
@@ -565,3 +594,112 @@ namespace IndexerApplication
 ```
 
 当然，索引器（Indexer）可被**重载**。索引器声明的时候也可带有多个参数，且每个参数可以是不同的类型。没有必要让索引器必须是整型的。C# 允许索引器可以是其他类型，例如，字符串类型。
+
+### 泛型
+
+6种泛型约束
+
+
+
+### 委托
+
+委托是**函数的容器**，可以理解为表示函数的变量类型，**本质是一个类**，用来定义函数的类型（返回值和参数类型），装载的函数的声明格式必须和委托的声明格式相同（返回值和参数类型）
+
+委托声明语法 ：函数声明语法前面加一个`delegate`关键字
+
+```c#
+//声明了一个用来装载 返回值为int无参的函数 的委托
+delegate void MyFun();
+
+void Fun(){
+    Console.WriteLine("fun");
+}
+MyFun f = new MyFun(Fun);	//装载函数Fun
+f.Invoke();					//调用委托的函数
+
+//声明了一个用来装载 返回值为int无参的函数 的委托
+delegate T MyFun2(T i);		//委托可以用泛型
+int Fun2(int i){
+    Console.WriteLine(i);
+}
+MyFun2 f2 = Fun2;		//装载方式二
+f2(1);				//调用方式二
+```
+
+委托常用在：
+
+1. 作为类的成员
+2. 作为函数的参数
+
+**多播委托**（存储多个函数）
+
+```c#
+//声明了一个用来装载 返回值为int无参的函数 的委托
+delegate void MyFun();
+
+void Fun(){
+    Console.WriteLine("fun");
+}
+MyFun f = new MyFun(Fun);	//装载函数Fun
+f += Fun;
+
+f();	//Fun函数被调用两次，因为委托加了两个Fun函数
+
+f -= Fun;	//移除指定函数
+f();		//调用一次Fun函数
+
+f = null	//委托清空
+```
+
+**系统自带的委托**
+
+- Action: 无参 **无返回值**的函数委托
+- Action<T...>:  多个参数 ，**无返回值**的函数委托
+- Func<T> : 无参，**返回值为 T** 的泛型函数的委托
+- Func<T..., M> : 多个参数，**返回值为 M** 的泛型函数的委托
+
+
+
+### 事件
+
+事件是基于委托的存在，他让委托的使用更具有安全性
+
+它只能作为成员变量存在于{% label 类、接口和结构体 red %}中
+
+它与委托的区别：
+
+- 不能在类外部 **赋值**（可以 +- 函数，但是不能直接赋值，可以避免 ` = null`将函数清空）
+- 不能在类外部 **调用**
+
+```c#
+class Test{
+    //委托声明
+    public Action myFun;
+    //事件声明
+    public event Action myEvent;
+    
+    public Test(){
+        //委托的操作
+        myFun = TestFun;
+        myFun += TestFun;
+        myFun -= TestFun;
+        myFun();
+        myFun.Invoke();
+        myFun = null;
+        
+        //事件的操作
+        myEvent = TestFun;
+        myEvent += TestFun;
+        myEvent -= TestFun;
+        myEvent();
+        myEvent.Invoke();
+        myEvent = null;
+    }
+    
+    
+    public void TestFun(){
+        Console.WriteLine("fun");
+    }
+}
+```
+
