@@ -14,6 +14,8 @@ date: 2023-09-30 15:44:30
 
 应对客户端网络模块中的{% label 网络连接 red %}、{% label 网络通信 red %}、{% label 协议统一 red %}等必备需求
 
+{% hideToggle 简单看看 %}
+
 ## 网络开发必备理论
 
 #### 网络基本概念
@@ -224,6 +226,8 @@ private async void GetHostEntry()
 ```
 
 调用`async`修饰的方法
+
+{% endhideToggle %}
 
 #### Socket
 
