@@ -703,3 +703,52 @@ class Test{
 }
 ```
 
+
+
+### extern关键字
+
+extern 修饰符用于声明在外部实现的方法。 extern 修饰符的常见用法是在使用 Interop 服务调入非托管代码时与 DllImport 特性一起使用。 在这种情况下，还必须将方法声明为 static，如下面的示例所示：
+
+```c#
+[DllImport("avifil32.dll")]
+private static extern void AVIFileInit();
+```
+
+**示例**（https://blog.csdn.net/weixin_43945471/article/details/112473159）
+
+1.创建以下 C 文件并将其命名为 cmdll.c：
+
+```c#
+// cmdll.c
+// Compile with: -LD
+int __declspec(dllexport) SampleMethod(int i)
+{
+  return i*10;
+}
+```
+
+
+
+2.从 Visual Studio 安装目录打开 Visual Studio x64（或 x32）本机工具命令提示符窗口，并通过在命令提示符处键入“cl -LD cmdll.c”来编译 cmdll.c 文件。
+
+3.在相同的目录中，创建以下 C# 文件并将其命名为 cm.cs：
+
+```c#
+// cm.cs
+using System;
+using System.Runtime.InteropServices;
+public class MainClass
+{
+    [DllImport("Cmdll.dll")]
+      public static extern int SampleMethod(int x);
+
+    static void Main()
+    {
+        Console.WriteLine("SampleMethod() returns {0}.", SampleMethod(5));
+    }
+
+}
+```
+
+
+从 Visual Studio 安装目录打开一个 Visual Studio x64（或 x32）本机工具命令提示符窗口，并通过键入以下内容来编译 cm.cs 文件
