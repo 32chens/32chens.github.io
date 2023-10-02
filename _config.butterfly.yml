@@ -100,7 +100,15 @@ cover:
   position: both
   # When cover is not set, the default cover is displayed (當沒有設置cover時，默認的封面顯示)
   default_cover:
-     - https://i.loli.net/2020/05/01/gkihqEjXxJ5UZ1C.jpg
+     - https://huaban.com/pins/4873115597?modalImg=https%3A%2F%2Fgd-hbimg.huaban.com%2F897242cb8a7f76ec3ace03b33ac46261b4190ef2656908-1tdpAo
+     - https://huaban.com/pins/5217906583?modalImg=https%3A%2F%2Fgd-hbimg.huaban.com%2F9e187846dc5bea1872595b47a1a1b0e91257b86013e56b-aIGIZe
+     - https://huaban.com/pins/5454501722?modalImg=https%3A%2F%2Fgd-hbimg.huaban.com%2Fd554de2896b3e86c3a4ff13f4d5bb3425979bf5712df015-mVgEz6
+     - https://huaban.com/pins/5623233316?modalImg=https%3A%2F%2Fgd-hbimg.huaban.com%2F6a3419ccf3135eb1b390023a4caff385361196d2aef6-q7iGfU_fw1200
+     - https://huaban.com/pins/5533039230?modalImg=https%3A%2F%2Fgd-hbimg.huaban.com%2F0a86fc445a46e4710c08c45bd2ef3526c650b98e1b6b22-WZRcWM
+     - https://huaban.com/pins/5524961636?modalImg=https%3A%2F%2Fgd-hbimg.huaban.com%2Fa60be2b69da5c0208d287d5b4c86a554fecaf2e63d7c0-ytnt1p_fw1200
+     - https://huaban.com/pins/4358926803?modalImg=https%3A%2F%2Fgd-hbimg.huaban.com%2Fb214e13b82f6c088fdc1c7e356295ce61a7e59ecc8800-pc6PLa_fw1200
+     - https://huaban.com/pins/5597023699?modalImg=https%3A%2F%2Fgd-hbimg.huaban.com%2F85694ed823ed82c3cff2120eb57dfa9b6267b8de1fc472-UPvI7q
+     - https://huaban.com/pins/4765997284?modalImg=https%3A%2F%2Fgd-hbimg.huaban.com%2F054a1558f8af3e472031d8c03ae7e8688b3b3ad4cc69-t2Qpew_fw1200
 
 # Replace Broken Images (替換無法顯示的圖片)
 error_img:
