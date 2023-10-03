@@ -100,7 +100,13 @@ cover:
   position: both
   # When cover is not set, the default cover is displayed (當沒有設置cover時，默認的封面顯示)
   default_cover:
-     - /img/test.webp
+     - /img/article0.webp
+     - /img/article1.webp
+     - /img/article2.jpg
+     - /img/article3.jpg
+     - /img/article4.jpg
+     - /img/article5.webp
+     - /img/article6.webp
      
 
 # Replace Broken Images (替換無法顯示的圖片)
