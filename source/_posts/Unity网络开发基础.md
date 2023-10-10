@@ -139,15 +139,15 @@ UDP：
 
 1. **弱联网和强联网游戏** 
 
-弱联网游戏：
+​	弱联网游戏：
 
-这种游戏不会频繁的进行数据通信，客户端和服务端之间每次连接只处理一次请求，服务端处理完 客户端的请求后返回数据后就断开连接了（开心消消乐、刀塔传奇、我叫MT等核心玩法都由客户端完成）
+​	这种游戏不会频繁的进行数据通信，客户端和服务端之间每次连接只处理一次请求，服务端处理完 客户端的请求后返回数据后就断开连接了（开心消消乐、刀塔传奇、我叫MT等核心玩法都由客户端完成）
 
-强联网游戏：
+​	强联网游戏：
 
-这种游戏会频繁的和服务端进行通信，会一直和服务端保持连接状态，不停的和服务器之间交换数据（MMORPG（角色扮演）、MOBA（多人在线竞技游戏）、ACT（动作游戏）等核心逻辑是由服务端进行处理，客户端和服务端之间不停的在同步信息）
+​	这种游戏会频繁的和服务端进行通信，会一直和服务端保持连接状态，不停的和服务器之间交换数据（MMORPG（角色扮演）、MOBA（多人在线竞技游戏）、ACT（动作游戏）等核心逻辑是由服务端进行处理，客户端和服务端之间不停的在同步信息）
 
-2. 长连接和短连接游戏 
+2. **长连接和短连接游戏** 
 
    短连接游戏：需要传输数据时，建立连接，传输数据，获得响应，断开连接
 
@@ -161,9 +161,9 @@ UDP：
 
    通信方式：TCP传输控制协议 或 UDP用户数据报协议
 
-3. Socket、HTTP、FTP
+3. **Socket、HTTP、FTP**
 
-Socket：网络套接字，是对网络中不同主机上的应用进程之间进行双向通信的端点的抽象，一个套接字就是网 络上进程通信的一端，提供了应用层进程利用网络协议交换数据的机制 我们之后主要要学习的就是Socket网络套接字当中的各种API来进行网络通信
+​	Socket：网络套接字，是对网络中不同主机上的应用进程之间进行双向通信的端点的抽象，一个套接字就是网 络上进程通信的一端，提供了应用层进程利用网络协议交换数据的机制 我们之后主要要学习的就是Socket网络套接字当中的各种API来进行网络通信
 
 主要用于制作长连接游戏（强联网游戏）
 
@@ -270,7 +270,9 @@ socketTcp.Close();
 
 这里需要注意的是`socketTcp.Accept();`他会返回一个新的Socket，用来表示客户端的socket连接，所以服务的是用这个新的socket来与对应的客户端发送和接受消息，当客户端关闭时，也只要将这个新的socket关闭就好了。只有整个服务器要关闭时才需要关闭`socketTcp`
 
-#### 客户端和服务端基础通信
+### TCP客户端和服务端基础通信
+
+![image-20231006090729705](https://hexo-chenlf.oss-cn-shanghai.aliyuncs.com/img/202310060907758.png)
 
 **服务端**
 
@@ -301,7 +303,7 @@ socketTcp.Close();
 
 
 
-客户端：
+TCP客户端：
 
 ```c#
 using System;
@@ -511,6 +513,380 @@ public class NetMgr : MonoBehaviour
 #### 心跳消息
 
 正常关闭客户端可以在关闭前发送一个退出消息给服务端，非正常关闭我们就需要心跳消息定时发送，服务端自定义超时判断。
+
+#### Socket TCP通信中的异步方法（Begin开头方法）
+
+```C#
+Socket socketTcp = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+//服务器相关
+//BeginAccept
+//EndAccept
+socketTcp.BeginAccept(AcceptCallBack, socketTcp);
+
+private void AcceptCallBack(IAsyncResult result)
+{
+    try
+    {
+        //获取传入的参数 服务端socket
+        Socket s = result.AsyncState as Socket;
+        //通过调用EndAccept就可以得到连入的客户端Socket
+        Socket clientSocket = s.EndAccept(result);
+
+        s.BeginAccept(AcceptCallBack, s);	//异步连接下一个客户端，不是递归
+    }
+    catch (SocketException e)
+    {
+        print(e.SocketErrorCode);
+    }
+}
+
+//客户端相关
+//BeginConnect
+//EndConnect
+IPEndPoint ipPoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 8080);
+socketTcp.BeginConnect(ipPoint, (result) =>
+        {
+            Socket s = result.AsyncState as Socket;
+            try
+            {
+                s.EndConnect(result);
+                print("连接成功");
+            }
+            catch (SocketException e)
+            {
+                print("连接出错" + e.SocketErrorCode + e.Message);
+            }
+
+        }, socketTcp);
+
+
+//服务器客户端通用
+//接收消息
+//BeginReceive
+//EndReceive
+socketTcp.BeginReceive(resultBytes, 0, resultBytes.Length, SocketFlags.None, ReceiveCallBack, socketTcp);
+
+private void ReceiveCallBack(IAsyncResult result)
+{
+    try
+    {
+        Socket s = result.AsyncState as Socket;
+        //这个返回值是你受到了多少个字节
+        int num = s.EndReceive(result);
+        //进行消息处理
+        Encoding.UTF8.GetString(resultBytes, 0, num);
+
+        //我还要继续接受
+        s.BeginReceive(resultBytes, 0, resultBytes.Length, SocketFlags.None, ReceiveCallBack, s);
+    }
+    catch (SocketException e)
+    {
+        print("接受消息处问题" + e.SocketErrorCode + e.Message);
+    }
+}
+
+//发送消息
+//BeginSend
+//EndSend
+byte[] bytes = Encoding.UTF8.GetBytes("1231231231223123123");
+socketTcp.BeginSend(bytes, 0, bytes.Length, SocketFlags.None, (result) =>
+        {
+            try
+            {
+                socketTcp.EndSend(result);
+                print("发送成功");
+            }
+            catch (SocketException e)
+            {
+                print("发送错误" + e.SocketErrorCode + e.Message);
+            }
+        }, socketTcp);
+```
+
+#### Socket TCP通信中的异步方法2（Async结尾方法）
+
+```c#
+//服务器端
+//AcceptAsync
+SocketAsyncEventArgs e = new SocketAsyncEventArgs();
+e.Completed += (socket, args) =>
+{
+    //首先判断是否成功
+    if (args.SocketError == SocketError.Success)
+    {
+        //获取连入的客户端socket
+        Socket clientSocket = args.AcceptSocket;
+
+        (socket as Socket).AcceptAsync(args);
+    }
+    else
+    {
+        print("连入客户端失败" + args.SocketError);
+    }
+};
+socketTcp.AcceptAsync(e);
+
+//客户端
+//ConnectAsync
+SocketAsyncEventArgs e2 = new SocketAsyncEventArgs();
+e2.Completed += (socket, args) =>
+{
+    if (args.SocketError == SocketError.Success)
+    {
+        //连接成功
+    }
+    else
+    {
+        //连接失败
+        print(args.SocketError);
+    }
+};
+socketTcp.ConnectAsync(e2);
+
+//服务端和客户端
+//发送消息
+//SendAsync
+SocketAsyncEventArgs e3 = new SocketAsyncEventArgs();
+byte[] bytes2 = Encoding.UTF8.GetBytes("123123的就是拉法基萨克两地分居");
+e3.SetBuffer(bytes2, 0, bytes2.Length);
+e3.Completed += (socket, args) =>
+{
+    if (args.SocketError == SocketError.Success)
+    {
+        print("发送成功");
+    }
+    else
+    {
+
+    }
+};
+socketTcp.SendAsync(e3);
+
+//接受消息
+//ReceiveAsync
+SocketAsyncEventArgs e4 = new SocketAsyncEventArgs();
+//设置接受数据的容器，偏移位置，容量
+e4.SetBuffer(new byte[1024 * 1024], 0, 1024 * 1024);
+e4.Completed += (socket, args) =>
+{
+    if(args.SocketError == SocketError.Success)
+    {
+        //收取存储在容器当中的字节
+        //Buffer是容器
+        //BytesTransferred是收取了多少个字节
+        Encoding.UTF8.GetString(args.Buffer, 0, args.BytesTransferred);
+
+        args.SetBuffer(0, args.Buffer.Length);
+        //接收完消息 再接收下一条
+        (socket as Socket).ReceiveAsync(args);
+    }
+    else
+    {
+
+    }
+};
+socketTcp.ReceiveAsync(e4);
+```
+
+
+
+
+
+
+
+### UDP客户端和服务端通信
+
+![image-20231006090658676](https://hexo-chenlf.oss-cn-shanghai.aliyuncs.com/img/202310060907786.png)
+
+**分包黏包问题**
+
+​	UDP本身作为无连接的不可靠的传输协议（适合频繁发送较小的数据包）, 他不会对数据包进行合并发送, 一端发送什么数据，直接就发出去了，他不会对数据合并, 因此在{% label UDP当中不会出现黏包问题 red %}（除非你手动进行黏包）
+
+​	由于UDP是**不可靠的连接**，消息传递过程中可能出现{% label 无序、丢包 red %}等情况。 所以如果允许UDP进行分包，那后果将会是灾难性的， 比如分包的后半段丢包或者比上半段先发来，我们在处理消息时将会非常困难。 因此为了**避免其分包**，我们建议在发送UDP消息时，控制消息的大小在{% label MTU（最大传输单元） red %}范围内
+
+​	MTU:
+
+1. ​	局域网环境下：1472字节以内（1500减去UDP头部28为1472） 
+2. ​	互联网环境下：548字节以内（老的ISP拨号网络的标准值为576减去UDP头部28为548）
+
+
+
+#### UDP基础通信
+
+```c#
+//实现UDP服务端通信 收发字符串
+//1.创建套接字
+Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+//2.绑定本机地址
+IPEndPoint ipPoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 8081);
+socket.Bind(ipPoint);
+Console.WriteLine("服务器开启");
+//3.接受消息
+byte[] bytes = new byte[512];
+//这个变量主要是用来记录 谁发的信息给你 传入函数后 在内部 它会帮助我们进行赋值记录客户端的IP和端口
+EndPoint remoteIpPoint2 = new IPEndPoint(IPAddress.Any, 0);
+int length = socket.ReceiveFrom(bytes, ref remoteIpPoint2);
+
+
+//4.发送到指定目标
+//由于我们先收 所以 我们已经知道谁发了消息给我 我直接发给它就行了
+socket.SendTo(Encoding.UTF8.GetBytes("欢迎发送消息给服务器"), remoteIpPoint2);
+
+//5.释放关闭
+socket.Shutdown(SocketShutdown.Both);
+socket.Close();
+```
+
+### FTP
+
+FTP文件传输协议就是一个在网络中上传下载文件的一套规则
+
+**FTP的工作原理**
+
+{% label FTP的本质是TCP通信 red %}，通过FTP传输文件，双发至少需要建立两个TCP连接，**一个称为控制连接，用于传输FTP命令。 一个称为数据连接，用于传输文件数据**
+
+**FTP的数据连接和控制连接方向一般是相反的**，控制连接方向：客户端主动连接服务器告知其下载命令。数据连接方向：服务端主动连接客户端下发数据
+
+
+
+当客户端和FTP服务器建立控制连接后 需要告诉服务器采用那种**传输模式** 
+
+1. **主动模式(Port模式)**：服务器主动连接客户端，然后传输文件
+2. **被动模式(Passive模式)**：客户端主动连接服务器，即控制连接和数据连接都由客户端发起
+
+注：一般情况下主动模式会受到客户端防火墙影响，所以被动模式使用较多
+
+使用FTP进行数据传输时，有两种数据**传输方式**
+
+1. **ASCII传输方式**：以ASCII编码方式传输数据，适用于传输 仅包含英文的命令和参数或者英文文本文件
+2. **二进制传输方式（建议使用该方式）**：可以指定采用哪种编码传输命令和文件数据 如果传输的文件不是英文文件则应该采用该方式
+
+
+
+**我们如何学习FTP**
+
+- C#中的三个类FtpWebRequest、FtpWebResponse、NetworkCredential 
+- 学习如何搭建FTP服务器 
+- 学习上传文件到FTP服务器 
+- 学习从FTP服务器下载文件到本地
+
+#### FtpWebRequest、FtpWebResponse、NetworkCredential 
+
+```c#
+ 	//NetworkCredential 
+//用于在Ftp文件传输时，设置账号密码
+NetworkCredential n = new NetworkCredential("MrTang", "MrTang123");
+
+	//FtpWebRequest
+//重要方法
+//1.Create 创建新的WebRequest，用于进行Ftp相关操作
+FtpWebRequest req = FtpWebRequest.Create(new Uri("ftp://127.0.0.1/Test.txt")) as FtpWebRequest;
+//2.Abort  如果正在进行文件传输，用此方法可以终止传输
+req.Abort();
+//3.GetRequestStream  获取用于上传的流
+Stream s = req.GetRequestStream();
+//4.GetResponse  返回FTP服务器响应
+FtpWebResponse res = req.GetResponse() as FtpWebResponse;
+
+//重要成员
+//1.Credentials 通信凭证，设置为NetworkCredential对象
+req.Credentials = n;
+//2.KeepAlive bool值，当完成请求时是否关闭到FTP服务器的控制连接（默认为true，不关闭）
+req.KeepAlive = false;
+
+//3.Method  操作命令设置
+//  WebRequestMethods.Ftp类中的操作命令属性
+//  DeleteFile  删除文件
+//  DownloadFile    下载文件    
+//  ListDirectory   获取文件简短列表
+//  ListDirectoryDetails    获取文件详细列表
+//  MakeDirectory   创建目录
+//  RemoveDirectory 删除目录
+//  UploadFile  上传文件
+req.Method = WebRequestMethods.Ftp.DownloadFile;	//  DownloadFile    下载文件 
+
+//4.UseBinary 是否使用2进制传输
+req.UseBinary = true;
+//5.RenameTo    重命名
+req.RenameTo = "myTest.txt";
+
+	//FtpWebResponse
+//通过FtpWebRequest来真正的从服务器获取内容
+FtpWebResponse res = req.GetResponse() as FtpWebResponse;
+//重要方法：
+//1.Close:释放所有资源
+res.Close();
+//2.GetResponseStream：返回从FTP服务器下载数据的流
+Stream stream = res.GetResponseStream();
+
+//重要成员：
+//1.ContentLength:接受到数据的长度
+print(res.ContentLength);
+//2.ContentType：接受数据的类型
+print(res.ContentType);
+//3.StatusCode:FTP服务器下发的最新状态码
+print(res.StatusCode);
+//4.StatusDescription:FTP服务器下发的状态代码的文本
+print(res.StatusDescription);
+//5.BannerMessage:登录前建立连接时FTP服务器发送的消息
+print(res.BannerMessage);
+//6.ExitMessage:FTP会话结束时服务器发送的消息
+print(res.ExitMessage);
+//7.LastModified:FTP服务器上的文件的上次修改日期和时间
+print(res.LastModified);
+```
+
+
+
+#### FTP上传
+
+主要是从文件流读取，写入到请求的流
+
+```C#
+//1.创建一个Ftp连接
+FtpWebRequest req = FtpWebRequest.Create(new Uri("ftp://192.168.50.49/pic.png")) as FtpWebRequest;
+//2.设置通信凭证(如果不支持匿名 就必须设置这一步)
+//将代理相关信息置空 避免 服务器同时有http相关服务 造成冲突
+req.Proxy = null;
+NetworkCredential n = new NetworkCredential("MrTang", "MrTang123");
+req.Credentials = n;
+//请求完毕后 是否关闭控制连接，如果想要关闭，可以设置为false
+req.KeepAlive = false;
+//3.设置操作命令
+req.Method = WebRequestMethods.Ftp.UploadFile;//设置命令操作为 上传文件
+//4.指定传输类型
+req.UseBinary = true;
+//5.得到用于上传的流对象
+Stream upLoadStream = req.GetRequestStream();
+
+//6.开始上传
+using (FileStream file = File.OpenRead(Application.streamingAssetsPath + "/test.png"))
+{
+    //我们可以一点一点的把这个文件中的字节数组读取出来 然后存入到 上传流中
+    byte[] bytes = new byte[1024];
+
+    //返回值 是真正从文件中读了多少个字节
+    int contentLength = file.Read(bytes, 0, bytes.Length);
+    //不停的去读取文件中的字节 除非读取完毕了 不然一直读 并且写入到上传流中
+    while (contentLength != 0)
+    {
+        //写入上传流中
+        upLoadStream.Write(bytes, 0, contentLength);
+        //写完了继续读
+        contentLength = file.Read(bytes, 0, bytes.Length);
+    }
+    //除了循环就证明 写完了 
+    file.Close();
+    upLoadStream.Close();
+    //上传完毕
+    print("上传结束");
+}
+}
+catch (Exception e)
+{
+    print("上传出错 失败" + e.Message);
+}
+```
 
 
 

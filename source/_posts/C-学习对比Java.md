@@ -614,7 +614,7 @@ delegate void MyFun();
 void Fun(){
     Console.WriteLine("fun");
 }
-MyFun f = new MyFun(Fun);	//装载函数Fun
+MyFun f = new MyFun(Fun);	//实例化委托变量f 装载函数Fun
 f.Invoke();					//调用委托的函数
 
 //声明了一个用来装载 返回值为int无参的函数 的委托
@@ -631,7 +631,7 @@ f2(1);				//调用方式二
 1. 作为类的成员
 2. 作为函数的参数
 
-**多播委托**（存储多个函数）
+**多播委托**（存储多个函数, **多播委托只能得到封装的最后一个方法的返回值**）
 
 ```c#
 //声明了一个用来装载 返回值为int无参的函数 的委托
@@ -651,12 +651,34 @@ f();		//调用一次Fun函数
 f = null	//委托清空
 ```
 
+ `+=` 的方式为**赋值后的委托变量**添加多个方法（**实例化算赋值，将委托变量=null也算赋值**）
+
+所以一般这样使用：
+
+```c#
+//类中声明
+public delegate void MyDelegate();  
+private MyDelegate1 myDelegate;
+
+//其他地方使用
+myDelegate += Func1;
+myDelegate += Func2;
+```
+
+第一次给委托变量赋值要用 “=”，这里看上去没有给委托赋值，实际上类中的成员变量会被默认初始化，执行了`=null`赋值
+
 **系统自带的委托**
 
 - Action: 无参 **无返回值**的函数委托
-- Action<T...>:  多个参数 ，**无返回值**的函数委托
+- Action<T...>:  多个参数（最多16个） ，**无返回值**的函数委托
 - Func<T> : 无参，**返回值为 T** 的泛型函数的委托
-- Func<T..., M> : 多个参数，**返回值为 M** 的泛型函数的委托
+- Func<T..., M> : 多个参数（最多16个），**返回值为 M** 的泛型函数的委托
+
+**Unity自带委托**
+
+引入命名空间：using UnityEngine.Events;
+定义方式类似：public UnityAction action;
+和 C# 的 Action 一样，`UnityAction` 可以引用带有一个 void 返回类型的方法，但是它最多只有4个参数的重载
 
 
 
@@ -664,9 +686,9 @@ f = null	//委托清空
 
 事件是基于委托的存在，他让委托的使用更具有安全性
 
-它只能作为成员变量存在于{% label 类、接口和结构体 red %}中
+它只能作为{% label 成员变量 red %}存在于{% label 类、接口和结构体 red %}中
 
-它与委托的区别：
+它与委托的区别：（委托是一种类，而事件是类里面的一个成员。）
 
 - 不能在类外部 **赋值**（可以 +- 函数，但是不能直接赋值，可以避免 ` = null`将函数清空）
 - 不能在类外部 **调用**
@@ -701,6 +723,42 @@ class Test{
         Console.WriteLine("fun");
     }
 }
+```
+
+事件的声明和使用2：
+
+1.先声明委托：
+
+```c#
+public delegate void OnOrderEventHandler(float price);
+```
+
+​	注：**如果一个委托是为事件准备的，那么它有一个{% label 命名规范 red %}**，在事件名后加上 EventHandler 。正如刚刚声明的，事件名是 OnOrder，那么为该事件准备的委托就命名为 OnOrderEventHandler
+
+2.然后先声明委托类型的字段，再声明事件，声明事件需使用 event 关键字：
+
+```c#
+//声明一个委托字段
+private OnOrderEventHandler onOrderEventHandler;
+//声明事件的完整格式。可以看出事件是委托字段的一个包装器，正如属性是字段的包装器一样
+//因为要让其他类能够访问这个私有委托，所以事件声明为public
+public event OnOrderEventHandler OnOrder
+{
+    add  //添加事件处理器
+    {
+        onOrderEventHandler += value; //value是关键字，指代之后传进来的事件处理器
+    }
+    remove  //移除事件处理器
+    {
+        onOrderEventHandler -= value;
+    }
+}
+```
+
+事件的声明是为**委托字段**提供 add 和 remove 构造器，上面的这些代码都可以浓缩成以下这句：
+
+```c#
+public event OnOrderEventHandler OnOrder;
 ```
 
 
@@ -752,3 +810,30 @@ public class MainClass
 
 
 从 Visual Studio 安装目录打开一个 Visual Studio x64（或 x32）本机工具命令提示符窗口，并通过键入以下内容来编译 cm.cs 文件
+
+### this拓展类
+
+```c#
+public class User
+{
+    public string userName;
+}
+public staic class UserEx
+{
+    public static void say(this User user){
+        Console.WriteLine(string.Format("嗨，大家好！大家可以叫我{0}！",  user.userName));
+    }
+}
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        User user = new User();
+        user.userName = "userName";
+        user.say();
+    }
+}
+```
+
+静态类静态方法`say`，会拓展为`User`类的一个实例方法
