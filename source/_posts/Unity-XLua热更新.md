@@ -1,5 +1,5 @@
 ---
-title: Unity-Lua热更新
+title: Unity-XLua热更新
 author: chenlf
 tags:
   - Unity
@@ -551,7 +551,7 @@ testClas = {
 }
 ```
 
-#### 类映射table
+
 
 - 在C#声明一个类，**成员变量的名字和类型一定要和lua方一致**
 - 要映射的只能是public，private和protected无法赋值
@@ -694,7 +694,7 @@ table.Dispose();
 
 ### 类
 
-lua中使用C#的类非常简单 {% label CS.命名空间.类名 red %}
+lua中使用C#的类非常简单 {% label CS.命名空间.类名  red %}
 ```lua
 -- Unity的类 比如 GameObject Transform等等 —— CS.UnityEngine.类名
 --为了方便使用 并且节约性能 定义全局变量存储 C#中的类
@@ -753,7 +753,7 @@ obj:AddComponent(typeof(CS.MyMonoCLass))
 
 ### 枚举
 
-枚举和类的使用一摸一样，只不过不存在实例化，{% label CS.命名空间.枚举名.枚举成员 red %}
+枚举和类的使用一摸一样，只不过不存在实例化，{% label CS.命名空间.枚举名.枚举成员  red %}
 
 ```lua
 CS.UnityEngine.PermitiveType.Cube
@@ -1024,4 +1024,132 @@ obj:DoEvent()	--调用（C#函数包裹）
 
 
 ### 特殊问题--二维数组遍历
+
+C#代码：
+
+```C#
+public class Test8{
+    public int[,] array = new int[2,3]{{1,2,3},{4,5,6}};
+}
+```
+
+lua代码:
+
+```lua
+--lua不能向C#一样通过[0,0]或者[0][0]访问
+local obj = CS.Test8()
+print(obj.array.GetValue(0,0))
+print(obj.array.GetValue(0,0))
+```
+
+二维数组本质上是Array类型, 它有一些像`GetValue`一样的方法访问元素,lua脚本不能像C#一样通过`array[0,0]`这样访问, 我的理解是这样只是属于C#的语法糖本上还是通过`GetValue`调用的
+
+
+
+### 特殊问题--null和nil的比较
+
+nil和null无法映射，不能`==`比较，所以一般用`obj:Equals(nil)`,前提是对象是一个Object
+
+方案一: 全局函数判断：
+
+```lua
+function IsNull(obj)
+	if obj == nil or obj:Equals(nil) then
+        reutrn true
+    end
+    return false
+end
+```
+
+方案二: C#为Object拓展一个方法
+
+```C#
+[LuaCallCSharp]
+public static class Tool{
+	public static bool IsNull(this Object obj){
+        return obj==null;
+    }
+}
+```
+
+```lua
+if obj:IsNull then
+    print("拓展方法")
+end
+```
+
+
+
+### 特殊问题--系统类型和Lua互相访问
+
+- CSharpCallLua 可以让lua调用C#的委托和接口
+- LuaCallCSharp 可以让Lua调用C#的拓展方法, 建议所有被lua调用的C#类添加
+
+无法为系统类或者第三方类库加上这两种特性:
+
+```C#
+public static class Test9{
+    [CSharpCallLua]
+    public static List<Type> csharpCallLua = new List<Type>(){
+        typeof(UnityAction<float>)
+    };
+    
+    [LuaCallCSharp]
+public static List<Type> luaCallCSharp = new List<Type>(){
+        typeof(UnityAction<float>)
+    };
+}
+```
+
+以后需要加特性的第三方类或者系统加到这两个List里面就好了
+
+
+
+### 协程
+
+```c#
+public class Test10:MonoBehavior{
+    
+}
+```
+
+我们不能直接将lua函数传入开启协程中, 需要使用xLua的一个工具表`xlua.util`的
+
+`cs_generator`方法把他当作协程函数
+
+```lua
+util = require("xlua.util")
+
+GameObject = CS.UnityEngine.GameObject
+WaitForSeconds = CS.UnityEngine.WaitForSeconds
+
+local obj = GameObject("Coroutine")
+local mono = obj:AddComponent(typeof(CS.Test10))
+
+fun = function()
+    local a=1
+    while true do
+        --lua中 不能直接使用C#中的 yield return
+        --就是用lua的协程返回
+        coroutine.yield(WaitForSeconds(1))
+   		print(a)
+        a = a + 1
+        if a > 10 then
+            mono:StopCoroutine(b)
+        end
+    end
+end
+
+
+b = mono:StartCoroutine(util.cs_generator(fun))
+```
+
+- lua中开启和关闭协程和C#一样, 只是lua函数要被当作协程函数需要使用xlua.util.cs_generator方法
+- C#的`yield return` 相当于Lua中 `coroutine.yield(返回值)` 
+
+
+
+### 泛型函数
+
+**lua只支持有参数有约束且约束是类的泛型函数**
 
