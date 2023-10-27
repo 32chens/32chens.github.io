@@ -494,3 +494,78 @@ public class ABUpdateMgr : MonoBehaviour
 2. 获取Project窗口选择的资源信息（Selection）
 3. 将选择到的文件复制到StreamingAssets文件夹中（AssetDatabase）
 4. 为StreamingAssets文件夹中的AB包文件信息写入资源对比文件中（文件写入）
+
+```c#
+using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using UnityEditor;
+using UnityEngine;
+
+public class MoveABToSA
+{
+    [MenuItem("AB包工具/移动资源到StreamingAssets")]
+    public static void MoveABToStreamingAssets()
+    {
+        //获取Project窗口选择的资源信息（Selection）
+        Object[] objs = Selection.GetFiltered(typeof(Object), SelectionMode.DeepAssets);
+        if (objs.Length == 0)
+        {
+            return;
+        }
+        
+        if (!Directory.Exists(Application.streamingAssetsPath))
+        {
+            Directory.CreateDirectory(Application.streamingAssetsPath);
+        }
+
+        string abCompareInfo = "";
+        //遍历选中的资源
+        foreach (Object obj in objs)
+        {
+            string assetPath = AssetDatabase.GetAssetPath(obj);
+            string fileName = assetPath.Substring(assetPath.LastIndexOf('/'));
+            FileInfo fileInfo = new FileInfo(Application.streamingAssetsPath + fileName);
+            if (!fileInfo.Extension.Equals("") && !fileInfo.Extension.Equals("txt"))
+            {
+                continue;
+            }
+            //将选择到的文件复制到StreamingAssets文件夹中（AssetDatabase）
+            AssetDatabase.CopyAsset(assetPath, "Assets/StreamingAssets" + fileName);
+            
+            //拼接资源对比文件内容
+            abCompareInfo += fileInfo.Name + " " + fileInfo.Length + " " +
+                             CreateABCompare.GetMD5(Application.streamingAssetsPath + fileName);
+            abCompareInfo += '/';
+        }
+        //为StreamingAssets文件夹中的AB包文件信息写入资源对比文件中（文件写入）
+        abCompareInfo = abCompareInfo.Substring(0, abCompareInfo.Length - 1);
+        File.WriteAllText(Application.streamingAssetsPath + "/ABCompareInfo.txt", abCompareInfo);
+        AssetDatabase.Refresh();
+    }
+}
+```
+
+
+
+## 游戏功能--默认资源转存问题
+
+![image-20231025110731838](https://hexo-chenlf.oss-cn-shanghai.aliyuncs.com/img/202310251107980.png)
+
+
+
+## 游戏功能--资源更新删除
+
+### 获取远端对比文件
+
+两种做法：
+
+1. 保存到临时文件中，待AB包下载完成后，再用该临时文件覆盖本地对比文件（使用）
+2. 不保存文件，直接通过下载流去读取字节数据转为字符串，待AB包下载完成后再保存为本地资源对比文件
+
+ABUpdateMgr中下载对比文件的方法修改文件名即可
+
+
+
+### 获取本地对比文件
+
