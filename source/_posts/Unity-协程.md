@@ -27,6 +27,8 @@ date: 2023-09-25 15:40:59
 yield return WaitForFixedUpdate();
 // 协程将在下一帧所有脚本的Update执行之后,再继续执行
 yield return null;
+// （任意数字）协程将在下一帧所有脚本的Update执行之后,再继续执行
+yield return 6;
 // 协程在延迟指定时间,且当前帧所有脚本的 Update全都执行结束后才继续执行
 yield return new WaitForSeconds(seconds);
 // 与WaitForSeconds类似, 但不受时间缩放影响
@@ -107,14 +109,130 @@ private IEnumerator Start() { // 此时程序中不能再有其他Start方法
 }
 ```
 
+注：协程只有在脚本失活时，不受影响，当脚本移除，游戏物体失活、销毁时都会结束
+
 
 
 ### 协程的原理
 
-- 协程函数本体
-- 协程调度器
+- 协程调度器IEnumerator，是一个函数对象的容器[函数代码1， 函数代码2，...，函数代码n]
+- 协程函数本体 yield抽取函数代码，放入IEnumerator容器中
 
-注：协程只有在脚本失活时，不受影响，当脚本移除，游戏物体失活、销毁时都会结束
+证明：
+
+```c#
+IEnumerator testCoroutine()
+{
+    Debug.Log("test coroutine");
+    yield return 1;
+    Debug.Log(100);
+    yield return 50;
+}
+
+void Start(){
+    IEnumerator testCor = this.testCoroutine();
+    Debug.Log("== start ==");
+    while(testCor.MoveNext()){	//执行IEnumerator容器内的函数代码，并移到下一个
+        Debug.Log(testCor.Current);		//打印yield的返回值
+    }
+    Debug.Log("== end ==");
+}
+```
+
+结果：
+
+```c#
+//== start ==
+//test coroutine
+//1
+//100
+//50
+//== end ==
+```
+
+
+
+### 模拟协程实现全过程
+
+从上面知道协程的本质原理，但是所有代码都是在一帧执行的，真正的协程不是这样的，现在我们来模拟协程，就只要在上面的基础上实现将IEnumerator容器内的函数每隔一帧触发一次
+
+```c#
+void Start(){
+    IEnumerator testCor = this.testCoroutine();
+    Debug.Log("== start ==");
+    My_StartCoroutine(testCoroutine);
+    Debug.Log("== end ==");
+}
+
+public void My_StartCoroutine(IEnumerator e){
+    this.myEnum = e;
+}
+
+IEnumerator testCoroutine()
+{
+    Debug.Log("test coroutine");
+    yield return 1;
+    Debug.Log(100);
+    yield return 50;
+}
+
+void LastUpdate(){
+    if(this.myEnum != null){
+        Debug.Log("start lastupdate");
+        if(!this.myEnum.MoveNext()){
+            this.myEnum = null;
+        }
+        Debug.Log("end lastupdate");
+    }
+}
+```
+
+结果：
+
+```c#
+//== start ==
+//== end ==
+//start lastupdate
+//test coroutine	
+//end lastupdate	//第一帧结束
+//start lastupdate	//第二帧
+//100			
+//end lastupdate
+```
+
+
+
+### 模拟协程等待
+
+```c#
+void LastUpdate(){
+    if(this.myEnum != null){
+        if(this.myEnum.Current is MyWaitForSeconds){
+            MyWaitForSeconds wait = this.myEnum.Current as MyWaitForSeconds;	//自定义MyWaitForSeconds类 维护两个变量：等待事件 当前累加时间
+            wait.update();	//内部累加时间
+            if(!wait.isOver()){	//判断时间是否达到
+                return;
+            }
+        }
+        
+        Debug.Log("start lastupdate");
+        if(!this.myEnum.MoveNext()){
+            this.myEnum = null;
+        }
+        Debug.Log("end lastupdate");
+    }
+}
+```
+
+所以类似的像`UnityWebRequest`对象的`Send`方法，实际上也是每帧判断这个方法返回值`AsyncOperation`对象里面的`isDone`方法，为`true`执行下一个函数，为`false`下一帧继续判断
+
+```c#
+UnityWebRequest req = UnityWebRequest.Get("...");
+yield return req.Send();
+Debug.Log("下载成功:"+req.downloadedBytes);
+```
+
+
 
 
 
