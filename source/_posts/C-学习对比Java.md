@@ -775,7 +775,7 @@ Type type = typeof(Rectangle);
 
 ### 委托
 
-委托是**函数的容器**，可以理解为表示函数的变量类型，**本质是一个类**，用来定义函数的类型（返回值和参数类型），装载的函数的声明格式必须和委托的声明格式相同（返回值和参数类型），用来 存储、传递函数(方法)
+委托是**函数的容器**，可以理解为表示函数的变量类型，**本质是一个类**，所以可以声明在类外，与类平级，用来定义函数的类型（返回值和参数类型），装载的函数的声明格式必须和委托的声明格式相同（返回值和参数类型），用来 存储、传递函数(方法)
 
 委托声明语法 ：函数声明语法前面加一个`delegate`关键字
 
@@ -852,13 +852,54 @@ myDelegate += Func2;
 定义方式类似：public UnityAction action;
 和 C# 的 Action 一样，`UnityAction` 可以引用带有一个 void 返回类型的方法，但是它最多只有4个参数的重载
 
+**委托原理**
+
+![委托反编译结果](https://hexo-chenlf.oss-cn-shanghai.aliyuncs.com/img/202310291728663.png)
+
+​	**委托变量的调用本质上通过反射对方法的调用**，委托类同时提供了两个只读属性Target和Method供使用，是将委托变量指向的对象和方法进行了包装，如果方法是静态方法，则Target为null，否则就指向对象的引用。Method属性返回一个System.Reflection.MethodInfo对象的引用。在我们调用Invoke方法时，其实是执行了委托变量指向的方法，只不过有一个内部包装和调用的机制。
+
+​	多播委托执行`+=`操作，反编译结果：
+
+```c#
+private delegate string AddDelegate<T>(T i, T j);
+//...
+
+AddDelegate<int> add = MyAdd;
+add += MyAdd;
+add += MyAdd;
+```
+
+```c#
+add = (AddDelegate<int>)Delegate.Combine(add, new AddDelegate<int>(this.MyAdd));
+add = (AddDelegate<int>)Delegate.Combine(add, new AddDelegate<int>(this.MyAdd));
+```
+
+调用了基类Delegate的Combine方法加入了方法链。
+
+**异步调用**
+
+1.异步调用的本质和适合场景
+这是异步调用方式，本质上是建立了一个线程，是简化的线程调用方法。
+
+比较适合在后台运行比较耗费时间的简单任务，要求任务之间是独立的、建议任务中不有要直接访问可视化控件的逻辑
+如果后台任务必须按照特定顺序执行，或者需要访问共享资源，异步编程不太适合，直接用多线程开发技术。
+
+![异步调用](https://hexo-chenlf.oss-cn-shanghai.aliyuncs.com/img/202310291734439.png)
+
+**2.BeginInvoke跟Invoke的区别**
+调用Invoke，在Invoke的方法返回前，这个线程会阻塞；调用BeginInvoke，在BeginInvoke的方法返回前，这个线程不会阻塞！
+
+**引用：**https://blog.csdn.net/shuaihj/article/details/53055788
+
+
+
 
 
 ### 事件
 
 事件是基于委托的存在，他让委托的使用更具有安全性
 
-它只能作为{% label 成员变量 red %}存在于{% label 类、接口和结构体 red %}中
+它在C#语言定义文档中描述为 是一种**类型成员**作为{% label 成员变量 red %}存在于{% label 类、接口和结构体 red %}中
 
 它与委托的区别：（委托是一种类，而事件是类里面的一个成员。）
 
@@ -911,9 +952,9 @@ class Test{
 public delegate void OnOrderEventHandler(float price);
 ```
 
-​	注：**如果一个委托是为事件准备的，那么它有一个{% label 命名规范 red %}**，在事件名后加上 EventHandler 。正如刚刚声明的，事件名是 OnOrder，那么为该事件准备的委托就命名为 OnOrderEventHandler
+​	注：**如果一个委托是为事件准备的，那么它有一个{% label C#命名规范 red %}**，在事件委托名后加上 EventHandler 。正如刚刚声明的，事件名是 OnOrder，那么为该事件准备的委托就命名为 OnOrderEventHandler
 
-2.然后先声明委托类型的字段，再声明事件，声明事件需使用 event 关键字：
+2.然后先声明委托类型的字段，再声明事件，声明事件需使用 event 关键字，**事件完整声明格式**--不常见：
 
 ```c#
 //声明一个委托字段
@@ -933,13 +974,83 @@ public event OnOrderEventHandler OnOrder
 }
 ```
 
-事件的声明是为**委托字段**提供 add 和 remove 构造器，上面的这些代码都可以浓缩成以下这句：
+事件的声明是为**委托字段**提供 add 和 remove 构造器，上面的这些代码都可以浓缩成以下这句（**事件简略声明格式**）：
 
 ```c#
 public event OnOrderEventHandler OnOrder;
 ```
 
 
+
+C#提供了一个通用的专门给事件使用的委托声明：
+
+```c#
+namespace System{
+    public delegate void EventHandler(object sender, EventArgs e);
+}
+```
+
+
+
+**从事件完整声明格式可知，事件它不是一个字段，更不是一个特殊委托类型的字段，他是一个委托类型字段的包装器**
+
+Unity提供的事件`UnityEvent<T>`，可以序列化，unity编辑器上可以显示出来并且可以拖拽选择函数。而C#的事件不能序列化，重启游戏后函数清空
+
+
+
+### 协变逆变
+
+- **协变：out** 
+- **逆变：in**
+
+用于在泛型中 修饰 泛型字母的；只有**泛型接口和泛型委托**能使用
+
+用out修饰的泛型 只能作为返回值
+
+```C#
+delegate T TestOut<out T>();
+```
+
+用in修饰的泛型 只能作为参数
+
+```C#
+delegate void TestIn<in T>(T t);
+```
+
+## 
+
+协变 out：父类总是能被子类替换，允许**子类返回值**委托赋值给**父类返回值**委托。
+
+```C#
+//这里声明了一个Son委托变量os，委托函数返回Son对象
+TestOut<Son> os = () =>
+{
+    return new Son();
+};
+//然后声明了一个Father委托变量of = os；
+//由于是out协变，允许子类委托赋值给父类委托
+//因为里氏替换原则，父类可以装子类。
+TestOut<Father> of = os;
+//实际上 返回的 是os里面装的函数 返回的是Son
+Father f = of();
+```
+
+逆变 in：父类总是能被子类替换，允许**父类参数委托**赋值给**子类参数委托**
+
+```C#
+//这里声明了一个Father委托变量if，参数类型为Father
+TestIn<Father> iF = (value) =>
+{
+
+};
+//然后声明了一个Son委托变量is，参数类型为Son
+//由于是in逆变，允许父类委托赋值给子类委托
+//因为里氏替换原则，父类可以装子类
+TestIn<Son> iS = iF;
+iS(new Son());//实际上 调用的是 iF
+```
+
+## 
 
 ### extern关键字
 

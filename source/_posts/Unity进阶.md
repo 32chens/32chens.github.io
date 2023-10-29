@@ -9,13 +9,13 @@ katex: true
 date: 2023-09-26 14:38:15
 ---
 
-## 2D动画相关
+# 2D动画相关
 
-## 3D动画相关
+# 3D动画相关
 
-## 角色控制器
+# 角色控制器
 
-##　导航寻路系统
+#　导航寻路系统
 
 Unity中的导航寻路系统本质上是在A星寻路算法的基础上进行了拓展和优化
 
@@ -26,7 +26,7 @@ Unity中的导航寻路系统本质上是在A星寻路算法的基础上进行�
 - 给导航角色添加 NavMeshAgent 组件；
 - 给导航角色添加脚本组件，并在脚本组件中设置导航目标位置（navMeshAgent.SetDestination）
 
-#### 导航网格
+### 导航网格
 
 用来生成寻路的地形数据
 
@@ -56,7 +56,7 @@ Jump Distance:　跳跃距离
 
 
 
-#### 导航网格寻路组件 NavMeshAgent
+### 导航网格寻路组件 NavMeshAgent
 
 用来帮助我们根据地形数据计算路径, 游戏角色对象需要挂载该组件`NavMeshAgent`
 
@@ -117,7 +117,7 @@ pathStateus
 
 
 
-#### 导航网格连接组件 OffMeshLink
+### 导航网格连接组件 OffMeshLink
 
 用来处理地形中间有断层时，让角色从一个平面跳向另一个平面
 
@@ -135,7 +135,7 @@ AutoUpdatePosition:　是否随着`Start`到`End`更新位置而选择新的路�
 
 
 
-#### 导航网格动态障碍物组件 NavMeshObstacle
+### 导航网格动态障碍物组件 NavMeshObstacle
 
 地形中可以移动或动态销毁的障碍物需要挂载的组件
 
