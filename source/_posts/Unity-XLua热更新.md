@@ -102,7 +102,7 @@ LuaEnv env = new LuaEnv();
 env.AddLoader(MyAddLoader);
 ```
 
-LuaEnv解析器在执行`require（"filename"）`的**执行流程**是：
+**LuaEnv解析器在执行`require（"filename"）`的执行流程是：**
 
 - 首先从加载器委托中依次从自定义加载器中获取文件内容的byte[]，所有自定义加载器都返回`null`，则默认从Resources文件夹下加载。
 - 如果自定义加载器返回不为空，则后面的自定义加载器和默认加载不执行
