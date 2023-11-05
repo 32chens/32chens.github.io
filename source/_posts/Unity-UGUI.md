@@ -580,3 +580,379 @@ sa.GetSprite("bk");
 
 # UGUI进阶
 
+### UI事件监听接口
+
+**解决什么问题**
+
+目前所有的控件都只提供了常用的事件监听列表，如果想做一些类似长按，双击，拖拽等功能是无法制作的，或者想让Image和Text，RawImage三大基础控件能够响应玩家输入也是无法制作的
+而事件接口就是用来处理类似问题，让**所有控件都能够添加更多的事件监听来处理对应的逻辑**
+
+
+
+**常见事件接口**
+
+- IPointerEnterHandler - OnPointerEnter - 当指针进入对象时调用 （鼠标进入）
+
+- IPointerExitHandler - OnPointerExit - 当指针退出对象时调用 （鼠标离开）
+
+- IPointerDownHandler - OnPointerDown - 在对象上按下指针时调用 （按下）
+
+- IPointerUpHandler - OnPointerUp - 松开指针时调用（在指针正在点击的游戏对象上调用）（抬起）
+
+- IPointerClickHandler - OnPointerClick - 在同一对象上按下再松开指针时调用 （点击）
+
+  
+
+- IBeginDragHandler - OnBeginDrag - 即将开始拖动时在拖动对象上调用 （开始拖拽）
+
+- IDragHandler - OnDrag - 发生拖动时在拖动对象上调用 （拖拽中）
+
+- IEndDragHandler - OnEndDrag - 拖动完成时在拖动对象上调用 （结束拖拽）
+
+{% hideToggle **不常用常见事件接口（了解即可）** %}
+
+- IInitializePotentialDragHandler - OnInitializePotentialDrag - 在找到拖动目标时调用，可用于初始化值
+
+- IDropHandler - OnDrop - 在拖动目标对象上调用
+
+- IScrollHandler - OnScroll - 当鼠标滚轮滚动时调用
+
+- IUpdateSelectedHandler - OnUpdateSelected - 每次勾选时在选定对象上调用
+
+  
+
+- ISelectHandler - OnSelect - 当对象成为选定对象时调用
+
+- IDeselectHandler - OnDeselect - 取消选择选定对象时调用
+
+  
+
+- 导航相关
+
+- IMoveHandler - OnMove - 发生移动事件（上、下、左、右等）时调用
+
+- ISubmitHandler - OnSubmit - 按下 Submit 按钮时调用
+
+- ICancelHandler - OnCancel - 按下 Cancel 按钮时调用
+
+{% endhideToggle %}
+
+
+
+**使用事件接口**
+
+1. 继承MonoBehavior的脚本继承对应的事件接口，引用命名空间
+2. 实现接口中的内容
+3. 将该脚本挂载到想要监听自定义事件的UI控件上
+
+
+
+**PointerEventData参数的关键内容**
+
+- 父类：BaseEventData
+- pointerId： 鼠标左右中键点击鼠标的ID 通过它可以判断右键点击
+- position：当前指针位置（屏幕坐标系）
+- pressPosition：按下的时候指针的位置
+- delta：指针移动增量
+- clickCount：连击次数
+- clickTime：点击时间
+- pressEventCamera：最后一个OnPointerPress按下事件关联的摄像机
+- enterEvetnCamera：最后一个OnPointerEnter进入事件关联的摄像机
+
+
+
+### EventTrigger 事件触发器
+
+事件触发器是EventTrigger组件，它是一个集成了上面所有事件接口的脚本，使用时只需要挂载到游戏物体即可
+
+使用方式：
+
+1. 拖曳脚本进行关联
+2. 代码添加
+
+```c#
+public class Lesson19 : MonoBehaviour
+{
+    public EventTrigger et;
+
+    void Start()
+    {
+        //申明一个希望监听的事件对象
+        EventTrigger.Entry entry = new EventTrigger.Entry();
+        //申明 事件的类型
+        entry.eventID = EventTriggerType.Drag;
+        //监听函数关联
+        entry.callback.AddListener((data) =>
+        {
+            print("抬起");
+        });
+
+
+        //把申明好的 事件对象 加入到 EventTrigger当中
+        et.triggers.Add(entry);
+}
+```
+
+
+
+### 屏幕坐标转UI相对坐标
+
+**RectTransformUtility类**
+
+RectTransformUtility 公共类是一个RectTransform的辅助类，主要用于进行一些坐标的转换等等操作，其中对于我们目前来说，最重要的函数是：将屏幕空间上的点，转换成UI本地坐标下的点
+
+**将屏幕坐标转换为UI本地坐标系下的点**
+
+方法：`RectTransformUtility.ScreenPointToLocalPointInRectangle`,一般配合拖拽事件使用
+
+```c#
+//实现图片拖拽功能
+public void OnDrag(PointerEventData eventData)
+{
+    ////参数一：相对父对象
+    ////参数二：屏幕点
+    ////参数三：摄像机
+    ////参数四：最终得到的点
+    Vector2 nowPos;
+    RectTransformUtility.ScreenPointToLocalPointInRectangle(
+        this.transfrom.parent as RectTransform,
+        eventData.position,
+        eventData.enterEventCamera,
+        out nowPos );
+
+    this.transform.localPosition = nowPos;
+}
+```
+
+
+
+### Mask遮罩
+
+实现遮罩效果的关键组件时Mask组件，通过在父对象上添加Mask组件即可遮罩其子对象
+
+注意：
+
+1. 想要被遮罩的Image需要勾选Maskable
+2. 只要父对象添加了Mask组件，那么所有的UI子对象都会被遮罩
+3. 遮罩父对象图片的制作，不透明的地方显示，透明的地方被遮罩
+
+技能CD:
+
+创建 3 个 Image 控件，分别重命名为 Circle、Skill、White，并给 Circle 添加 Mask 组件，再创建一个 Text 控件，这些控件的宽高都是 300，控件层级结构如下：
+
+![image-20231105182629929](https://hexo-chenlf.oss-cn-shanghai.aliyuncs.com/img/202311051826026.png)
+
+Circle、Skill、White 对应的图片如下：
+
+![image-20231105182808987](https://hexo-chenlf.oss-cn-shanghai.aliyuncs.com/img/202311051828021.png)![image-20231105182822963](https://hexo-chenlf.oss-cn-shanghai.aliyuncs.com/img/202311051828791.png)![img](https://hexo-chenlf.oss-cn-shanghai.aliyuncs.com/img/202311051828757.png)
+
+将 White 控件的 Image Type 设置为 Filled，Fill Origin 设置为 Top，取消 Clockwise 选项，如下
+
+![image-20231105183110924](https://hexo-chenlf.oss-cn-shanghai.aliyuncs.com/img/202311051831958.png)
+
+```c#
+using UnityEngine;
+using UnityEngine.UI;
+ 
+public class SkillCD : MonoBehaviour {
+	private Image skillWhiteImage;
+	private Text skillWaitText;
+	private bool hasReleaseSkill = false;
+	private float skillInterval = 2; // 技能冷却时间
+	private float skillWaitTime = 0; // 释放技能后等待时间
+ 
+	private void Start () {
+		skillWhiteImage = transform.Find("White").GetComponent<Image>();
+		skillWaitText = transform.Find("Text").GetComponent<Text>();
+		skillWhiteImage.fillAmount = 0;
+	}
+ 
+	private void Update () {
+		skillWaitTime += Time.deltaTime;
+		if (!hasReleaseSkill && Input.GetMouseButtonDown(0)) {
+			releaseSkill();
+		}
+		waitSkill();
+	}
+ 
+	private void releaseSkill() { // 释放技能
+		skillWhiteImage.fillAmount = 1;
+		skillWaitText.text = skillInterval.ToString("0.0");
+		hasReleaseSkill = true;
+		skillWaitTime = 0;
+	}
+ 
+	private void waitSkill() { // 等待技能点亮
+		if (hasReleaseSkill) {
+			float resTime = skillInterval - skillWaitTime;
+			skillWhiteImage.fillAmount = resTime / skillInterval;
+			skillWaitText.text = resTime.ToString("0.0");
+			if (skillWaitTime > skillInterval) {
+				hasReleaseSkill = false;
+				skillWaitText.text = "";
+			}
+		}
+	}
+}
+```
+
+效果：
+
+![img](https://hexo-chenlf.oss-cn-shanghai.aliyuncs.com/img/202311051831809.gif)
+
+引用：https://zhyan8.blog.csdn.net/article/details/125708483
+
+
+
+### 模型和粒子显示在UI之前
+
+有两种方式：
+
+1. **直接用摄像机渲染3D物体**，摄像机模式 和 世界(3D)模式都可以让模型显示在UI之前（模型和粒子放在Canvas对象下和Z轴在UI元素之前即可，前面canvas渲染方式中有说明）
+   - 粒子也可以通过设置Render里的Order in Layer显示在UI前
+2. **将3D物体渲染在图片上，通过图片显示**
+
+方式二：
+
+创建一个专门渲染模型或粒子的模型相机，新建渲染层model并设置，新建RenderTexture并设置，这样这个相机的看到的图像就会被渲染到新建的RenderTexture
+
+![image-20231105185359634](https://hexo-chenlf.oss-cn-shanghai.aliyuncs.com/img/202311051853686.png)
+
+新建RawImage，并将新建的Render Texture设置给他，他就会显示模型相机的内容了
+
+![image-20231105185533312](https://hexo-chenlf.oss-cn-shanghai.aliyuncs.com/img/202311051855358.png)
+
+结果：
+
+![image-20231105185802822](https://hexo-chenlf.oss-cn-shanghai.aliyuncs.com/img/202311051858874.png)
+
+![image-20231105185836645](https://hexo-chenlf.oss-cn-shanghai.aliyuncs.com/img/202311051858676.png)
+
+
+
+
+
+### 异形按钮
+
+按钮图片透明区域不响应点击事件就是异形按钮
+
+**方式一：通过添加子对象的形式**
+
+按钮之所以能够响应点击，主要是根据图片矩形范围进行判断的，它的范围判断是自下而上的，意思是先判断子对象图片的范围再判断父对象的范围，所以我们可以在不规则图片下添加按钮控件作为子对象，将按钮的背景图删除并且添加多个透明图片子对象拼凑不规则图形进行射线检测
+
+**方法二：代码改变图片的透明度响应阈值**
+
+```c#
+public Image img;
+img.alphaHitTestMinimumThreshold = 0.1f;
+```
+
+
+
+
+
+### 自动布局组件
+
+虽然UGUI的RectTransform已经非常方便的可以帮助我们快速布局，但UGUI中还提供了很多可以帮助我们对UI控件进行自动布局的组件
+
+自动布局的工作方式一般是：自动布局控制组件 + 布局元素 = 自动布局
+布局元素：具备布局属性的对象们，这里主要是指具备RectTransform的UI组件
+
+**布局元素的布局属性**
+
+- Minmum width：该布局元素应具有的最小宽度
+- Minmum height：该布局元素应具有的最小高度
+- Preferred width：在分配额外可用宽度之前，此布局元素应具有的宽度
+- Preferred height：在分配额外可用高度之前，此布局元素应具有的高度。
+- Flexible width：此布局元素应相对于其同级而填充的额外可用宽度的相对量
+- Flexible height：此布局元素应相对于其同级而填充的额外可用宽度的相对量
+
+在进行自动布局时，这六个属性会参与到计算中
+
+![image-20231105231555438](https://hexo-chenlf.oss-cn-shanghai.aliyuncs.com/img/202311052315475.png)
+
+一般情况下布局元素的这些属性都是0，但是特定的UI组件依附的对象布局属性会被改变，比如Image和Text
+一般情况下我们不会去手动修改他们，但是如果你有这些需求，可以手动添加一个LayoutElement组件 可以修改这些布局属性
+
+
+
+**水平垂直布局组件**
+
+`Horizontal Layout Group` 和 `Vertical Layout Group`
+
+![image-20231105231846011](https://hexo-chenlf.oss-cn-shanghai.aliyuncs.com/img/202311052318048.png)
+
+- Padding：左右上下边缘偏移位置
+- Spacing：子对象之间的间距
+- ChildAlignment：九宫格对其方式
+- Control Child Size：是否控制子对象的宽高
+- Use Child Scale：在设置子对象大小和布局时，是否考虑子对象的缩放
+- Child Force Expand：是否强制子对象拓展以填充额外可用空间
+
+
+
+**网格布局组件**
+
+`Grid Layout Group`
+
+![image-20231105232336960](https://hexo-chenlf.oss-cn-shanghai.aliyuncs.com/img/202311052323994.png)
+
+- Cell Size：每个格子的大小
+- Spacing：格子间隔
+- Start Corner:第一个元素所在位置（4个角）
+- Start Axis：沿哪个轴放置元素；Horizontal水平放置满换行，Vertical竖直放置满换列
+- Child Alignment：格子对其方式（9宫格）
+- Constraint：行列约束
+  - Flexible：灵活模式，根据容器大小自动适应
+  - Fixed Column Count：固定列数
+  - Fixed Row Count：固定行数
+
+
+
+**内容大小适配器**
+
+`Content Size Fitter`
+
+它可以自动的调整RectTransform的长宽来让组件自动设置大小，一般在Text上使用 或者 配合其它布局组件一起使用
+
+![image-20231105233244492](https://hexo-chenlf.oss-cn-shanghai.aliyuncs.com/img/202311052332526.png)
+
+- Horizontal Fit：如何控制宽度
+- Vertical Fit：如何控制高度
+  - Unconstrained：不根据布局元素伸展
+  - Min Size：根据布局元素的最小宽高度来伸展
+  - Preferred Size：根据布局元素的偏好宽度来伸展宽度
+
+在用Scroll View制作背包时，可以在内容控件添加网格布局组件和内容大小适配器，并设置Vertical Fit为Preferred Size，这样背包内容动态增加时，Scroll View内容控件也会随着增大，减少了代码设置内容控件大小
+
+
+
+**宽高比适配器**
+
+`Aspect Ratio Fitter`
+
+- 让布局元素按照一定比例来调整自己的大小
+- 使布局元素在父对象内部根据父对象大小进行适配
+
+参数：
+
+Aspect Mode：适配模式，如果调整矩形大小来实施宽高比
+
+- None：不让矩形适应宽高比
+- Width Controls Height：根据宽度自动调整高度
+- Height Controls Width：根据高度自动调整宽度
+- Fit In Parent：自动调整宽度、高度、位置和锚点，使矩形适应父项的矩形，同时保持宽高比，会出现“黑边”
+- Envelope Parent：自动调整宽度、高度、位置和锚点，使矩形覆盖父项的整个区域，同时保持宽高比，会出现“裁剪”
+
+
+
+### Canvas Group组件
+
+为面板父对象添加 CanvasGroup组件即可整体控制（例如整体控制一个面板的淡入淡出 或者 整体禁用）
+
+参数相关：
+
+- Alpha：整体透明度控制
+- Interactable:整体启用禁用设置
+- Blocks Raycasts：整体射线检测设置
+- Ignore Parent Groups：是否忽略父级CanvasGroup的作用
