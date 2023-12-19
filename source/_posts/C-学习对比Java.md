@@ -33,7 +33,8 @@ class ConstTestMain
 ```
 
 - **const只能用来修饰基本数据类型、字符串类型、同为const的变量。**
-- const修饰的变量不能再用`static`变量进行修饰，并且其只能在字段的声明中初始化, 所以**const必须初始化**，const的原理是在编译期直接对变量值进行替换的。所以虽然他没有被`static`变量修饰，但他还是一个静态变量可以被`类名.`直接调用
+- const修饰的变量不能再用`static`变量进行修饰，并且其只能在字段的声明中初始化, 所以**const必须初始化**且**不允许动态修改**，const的原理是在编译期直接对变量值进行替换的。所以虽然他没有被`static`变量修饰，但他还是一个静态变量可以被`类名.`直接调用
+- readonly修饰符，初始化时机：运行时，可以声明时赋值或在类中的构造函数中赋值，**只允许在构造函数中修改**（主要作用于实例化的对象的只读属性）
 
 <!-- endtab -->
 
@@ -1017,7 +1018,7 @@ delegate T TestOut<out T>();
 delegate void TestIn<in T>(T t);
 ```
 
-## 
+
 
 协变 out：父类总是能被子类替换，允许**子类返回值**委托赋值给**父类返回值**委托。
 
@@ -1050,7 +1051,15 @@ TestIn<Son> iS = iF;
 iS(new Son());//实际上 调用的是 iF
 ```
 
-## 
+
+
+总结：
+
+协变和逆变的主要区别在于类型转换的方向。在协变中，子类型转换成父类型，而在逆变中，父类型转换成子类型。
+
+​	逆变应用于参数类型。例如，假设有一个接口Comparator，其中定义了一个方法compare(T t1, T t2)，而Dog和Cat都实现了该接口。如果要在Dog和Cat之间进行比较，就需要实现比较器DogComparator和CatComparator。在这种情况下，DogComparator应该能够接受任何Animal类型的参数，而CatComparator同样也应该能够接受任何Animal类型的参数。因此，这就是逆变的应用。
+
+
 
 ### extern关键字
 
@@ -1102,7 +1111,7 @@ public class MainClass
 
 
 
-### this拓展类
+### this关键字--拓展类
 
 ```c#
 public class User
@@ -1132,7 +1141,6 @@ class Program
 注意：
 
 - 自身方法优先于拓展方法的调用。
-
 - 不能为静态类扩展方法
 
 

@@ -115,6 +115,8 @@ private IEnumerator Start() { // 此时程序中不能再有其他Start方法
 
 ### 协程的原理
 
+yield return的作用是在执行到这行代码之后，将控制权立即交还给外部。yield return之后的代码会在外部代码再次调用MoveNext时才会执行，直到下一个yield return——或是迭代结束。所以可以把协程抽象成以下情况：
+
 - 协程调度器IEnumerator，是一个函数对象的容器[函数代码1， 函数代码2，...，函数代码n]
 - 协程函数本体 yield抽取函数代码，放入IEnumerator容器中
 

@@ -368,6 +368,8 @@ Standalone Input Module组件用于处理鼠标/键盘/控制器/触屏（新版
 
 与Image区别是一般RawImage用于显示大图且对图片类型没有要求（背景图，不需要打入图集的图片，网络下载的图等）
 
+本质上是采集图片数据显示到UV上，所以UV Rect是控制采集范围的
+
 
 
 ## 组合控件
@@ -956,3 +958,21 @@ Aspect Mode：适配模式，如果调整矩形大小来实施宽高比
 - Interactable:整体启用禁用设置
 - Blocks Raycasts：整体射线检测设置
 - Ignore Parent Groups：是否忽略父级CanvasGroup的作用
+
+
+
+# 总结
+
+需要达到的水平：
+
+1. 能够熟练制作各种界面
+2. 熟练利用面向对象思想编程，面板父对象脚本管理子控件逻辑
+3. Canvas Scaler的设置 和 RectTransform锚点设置
+
+UGUI的代码是能被直接看到的 Unity安装目录下`Data\Resources\PackageManager\BuiltInPackages\com.unity.ugui`
+随着自己的能力提升，以后可以深入去了解一下它的一些逻辑实现
+
+一些和UI相关的知识：
+
+1. DoTween—缓动插件，可以制作一些缓动效果
+2. TextMeshPro—文本网格插件，可以制作更多的特效文字
