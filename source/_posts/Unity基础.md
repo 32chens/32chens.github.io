@@ -9,7 +9,7 @@ katex: true
 date: 2023-09-26 09:36:56
 ---
 
-# 放射机制和游戏场景
+# 反射机制和游戏场景
 
 GameObject类是Unity提供的作为场景中所有对象的根本，不管是图片、模型、音效、摄像机等等都是依附于GameObject对象的
 
@@ -296,7 +296,7 @@ Occlusion Culling：是否启用剔除遮挡，一般默认勾选。是否渲染
 
   ```C#
   //参数是一个Camera
-  Camera.onPoseCull _= (c)
+  Camera.onPoseCull -= (c)
   {
   
   };
@@ -386,6 +386,45 @@ Window-> Rendering  ->  Lighting Settings
 
 
 
+### 碰撞检测函数
+
+
+
+### 刚体加力
+
+
+
+# 音频系统
+
+
+
+### 音频文件导入
+
+
+
+### 音频源和音频监听脚本
+
+
+
+### 代码控制音频源
+
+
+
+### 麦克风输入
+
+
+
+# 四元数
+
+
+
+# MonoBehavior重要内容
+
+### 延迟函数
+
+
+
+### 协同程序
 
 
 
@@ -394,19 +433,20 @@ Window-> Rendering  ->  Lighting Settings
 
 
 
-### Resources资源动态加载
 
-**特殊文件夹**
+# Resources资源动态加载
 
-**Resources资源同步加载**
+### 特殊文件夹
 
-**Resources资源异步加载**
+### Resources资源同步加载
 
-**Resources资源卸载**
+### Resources资源异步加载
+
+### Resources资源卸载
 
 
 
-### 异步加载资源和异步加载场景事件回调
+# 异步加载资源和异步加载场景事件回调
 
 ```c#
 Resource.LoadAsync<Texture>("Txt/TestJPG")
@@ -420,3 +460,16 @@ SceneManager.LoadSceneAsync("scene1")
 ```cs
 DontDestroyOnLoad(this.gameObject);
 ```
+
+
+
+# LineRenderer
+
+
+
+# 范围检测
+
+
+
+# 射线检测
+

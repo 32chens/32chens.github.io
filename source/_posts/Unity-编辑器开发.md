@@ -80,7 +80,7 @@ public class Test:MonoBehavior{
 }
 ```
 
-
+PS：AddComponentMenu这个特性不支持快捷键哦
 
 
 
@@ -170,3 +170,12 @@ color变量 = EditorGUILayout.ColorField(new GUIContent("标题"),color变量, �
 
 
 **枚举、选择、按下按钮 控件:**
+
+```C#
+//枚举选择
+枚举变量 = (枚举类型)EditorGUILayout.EnumPopup("枚举选择", 枚举变量);
+//多选枚举 
+枚举变量 = (枚举类型)EditorGUILayout.EnumFlagsField("枚举选择", 枚举变量);
+```
+
+PS:多选枚举进行的是或运算,所以枚举最好赋值成2的幂次方
