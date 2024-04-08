@@ -380,17 +380,133 @@ Window-> Rendering  ->  Lighting Settings
 
 网格碰撞器加上刚体必须勾选Convex
 
+触发器：两个物体碰撞没有碰撞效果，只做碰撞处理
+
 
 
 ### 物理材质
+
+一般商业项目不会使用，了解即可
+
+在碰撞器中有物理材质这个成员，主要用来在碰撞时使用物理材质的内容做计算，达到不同的碰撞效果
+
+![image-20240408203025654](https://hexo-chenlf.oss-cn-shanghai.aliyuncs.com/img/202404082030757.png)
+
+物理材质的创建：
+
+​	Project面板右键 `Physic Material` 或者`Physic Material 2D`
+
+物理材质的参数：
+
+![image-20240408203336444](https://hexo-chenlf.oss-cn-shanghai.aliyuncs.com/img/202404082033513.png)
+
+主要是动静摩擦力和碰撞反弹时能量损耗，以及两个不同物理材质的碰撞体接触的计算方式
 
 
 
 ### 碰撞检测函数
 
+注意：碰撞和触发响应函数属于特殊的生命周期函数，也是通过反射调用的，他们是发生在`FixedUpdate`物理帧更新之后、`Update`逻辑帧更新之前的。且执行频率跟`FixedUpdate`相同
+
+**碰撞响应函数：**
+
+```c#
+//碰撞开始
+void OnCollisionEnter(Collision collisiono){
+   //... 
+}
+//碰撞结束
+void OnCollisionExit(Collision collisiono){
+   //...
+}
+//碰撞接触中
+void OnCollisionStay(Collision collisiono){
+   //...  
+}
+```
+
+其中`OnCollisionEnter`、`OnCollisionExit`分别在碰撞开始和结束时只执行一次，`OnCollisionStay`在碰撞接触时执行，但不是两个物体一直接触就一直执行，物体碰撞接触后静止下来就不再执行了。例如立方体掉落到平面可能执行二十几次后就不再执行。
+
+这三个函数的参数`Collision`主要记录了碰撞发生的一些信息：(可以得到他的所有信息，GetComponent方法)
+
+- collision.collider:	碰撞的对象的碰撞器信息
+- collision.gameObject:    碰撞的对象依附的游戏对象（GameObject）
+- collision.transform:    碰撞的对象的位置信息
+- 接触点相关：collision.contactCount、collision.contacts
+
+**触发器响应函数：**
+
+```c#
+void OnTriggerEnter(Collider other){}
+void OnTriggerExit(Collider other){}
+void OnTriggerStay(Collider other){}
+```
+
+跟碰撞响应函数类似，只是方法参数变成了`Collider`碰撞器组件，且`OnTriggerStay`在两个物体空间上接触时调用
+
+Collider组件可以得到游戏对象的所有信息：`other.gameObject.GetComponent<T>()`
+
+>如果一个异形物体，刚体在父物体上，如果在子物体上的脚本写碰撞检测响应函数是不行的， 必须在挂载了刚体的父物体上才可以
+
 
 
 ### 刚体加力
+
+**添加力（参数方向向量）：**
+
+- 相对世界坐标：rigidBody.AddForce(Vector3.forward * 10)
+- 相对本地坐标：rigidBody.AddRelativeForce(Vector3.forward * 10)
+
+**添加扭矩力（参数旋转轴）：**
+
+- 相对世界坐标：rigidBody.AddTorque(Vector3.up* 10)
+- 相对本地坐标：rigidBody.AddRelativeTorque(Vector3.up * 10)
+
+**直接改变移动速度：**
+
+rigidBody.velocity = Vector3.forward * 10
+一般不使用这种方式
+
+**模拟爆炸效果：**
+
+rigidBody.AddExplosionForce(100, Vector.zero, 5)
+相对世界坐标，参数分别代表力的大小、爆炸中心点，爆炸半径
+
+
+
+**力的模式：**
+
+以上添加力的方法还有第二个参数的重载版本rigidBody.AddForce(Vector3.forward * 10， ForceMode.Acceleration)
+
+主要是计算方式的不同，最终速度不同
+
+动量定理：Ft = mv 即 v = Ft/m	(F:力、t:时间、m:质量、v:速度)
+
+- Acceleration: 忽略质量
+- Force:啥也不忽略
+- Impulse: 忽略时间
+- VelocityChange：忽略时间和质量
+
+以上忽略都是代入默认值1进行计算，一般Force比较符合现实物理情况
+
+
+
+**力场脚本：**
+Constant Force组件：设置一个持续的力。
+了解即可
+
+
+
+**刚体失眠：**
+
+Unity为了节约性能，有时会让刚体失眠，造成一些奇怪的情况，例如：平面上的立方体放置一段时间后，旋转平面，立方体浮空
+解决方法：
+
+```c#
+if(rigidBody.IsSleeping()){
+    rigidBody.WakeUp()
+}
+```
 
 
 
