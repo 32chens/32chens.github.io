@@ -516,17 +516,90 @@ if(rigidBody.IsSleeping()){
 
 ### 音频文件导入
 
+**unity支持的音频文件格式:**
+
+​	wav、mp3、ogg、aiff
+
+**音频文件参数：**
+
+​	![image-20240410211746183](https://hexo-chenlf.oss-cn-shanghai.aliyuncs.com/img/202404102117305.png)
+
+![image-20240410212338336](https://hexo-chenlf.oss-cn-shanghai.aliyuncs.com/img/202404102123383.png)
 
 
-### 音频源和音频监听脚本
+
+### 音频源和音频组件
+
+​	**AudioSource:**
+
+![image-20240410214853237](https://hexo-chenlf.oss-cn-shanghai.aliyuncs.com/img/202404102148278.png)
+
+![image-20240410214900602](https://hexo-chenlf.oss-cn-shanghai.aliyuncs.com/img/202404102149662.png)![image-20240410214904561](https://hexo-chenlf.oss-cn-shanghai.aliyuncs.com/img/202404102149616.png)
+
+混音器属于高级功能，一般音乐游戏会使用
+2D音效声音一直一样大，3D音效符合现实近大远小
+
+​	**Audio Listener：**
+收声组件，场景中要有这个组件才能听到声音，一般摄像机上有这个组件
 
 
 
 ### 代码控制音频源
 
+播放停止暂停：
+
+```c#
+audioSource.Play();
+audioSource.PlayDelay(5);//延迟播放
+audioSource.Stop();
+audioSource.Pause();
+audioSource.UnPause();//停止暂停，效果跟Play一样继续播放
+```
+
+检测音效是否播放完毕：
+
+```c#
+audioSource.isPlaying//属性
+```
+
+动态控制音效播放：
+	设置`AudioSource`的**clip**（`AudioClip`）
+
 
 
 ### 麦克风输入
+
+获取麦克风信息：
+
+```c#
+string[] names = Microphone.deivices;//获取麦克风设备名
+```
+
+开始录制：
+
+```c#
+//参数一：设备名 null使用默认设备
+//参数二：超过录制长度 是否重新录制
+//参数三：录制长度限制 单位秒
+//参数四：采样率
+AudioClip clip = Microphone.Start(null, false, 10, 44100);
+```
+
+结束录制：
+
+```c#
+//参数：设备名 null默认设备
+Microphone.End(null);
+```
+
+音频数据存储或传输：
+
+```c#
+//声明float数组 长度规则：声道数 * 剪辑长度
+float[] f = new float[clip.channels * clip.simples];
+//音频数据存储到float数组 网络传输中可以将float数组转成byte数组传输
+clip.GetData(f, 0);	
+```
 
 
 
