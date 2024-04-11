@@ -603,7 +603,226 @@ clip.GetData(f, 0);
 
 
 
+# 3D数学
+
+### 坐标转换
+
+**世界坐标系**
+
+ 原点：世界的中心点
+
+ 轴向：世界坐标系的三个轴向是固定的
+
+**物体坐标系**
+
+ 原点：物体的中心点（建模时决定）
+
+ 轴向：
+ 物体右方为 x 轴正方向
+ 物体上方为 y 轴正方向
+ 物体前方为 z 轴正方向
+
+**屏幕坐标系**
+
+ 原点：屏幕左下角
+
+ 轴向：
+ 向右为 x 轴正方向
+ 向上为 y 轴正方向
+
+**视口坐标系**
+
+ 原点：屏幕左下角
+
+ 轴向：
+ 向右为 x 轴正方向
+ 向上为 y 轴正方向
+
+ 特点：
+ 左下角为（0, 0）
+ 右上角为（1, 1）
+ 和屏幕坐标类似，将坐标单位化
+
+**坐标转换：**
+
+```c#
+// 世界转本地
+this.transform.InverseTransformDirection
+this.transform.InverseTransformPoint
+this.transform.InverseTransformVector
+// 本地转世界
+this.transform.TransformDirection
+this.transform.TransformPoint  
+this.transform.TransformVector
+
+// 世界转屏幕
+Camera.main.WorldToScreenPoint
+// 屏幕转世界
+Camera.main.ScreenToWorldPoint
+
+// 世界转视口
+Camera.main.WorldToViewportPoint
+// 视口转世界
+Camera.main.ViewportToWorldPoint
+
+// 视口转屏幕
+Camera.main.ViewportToScreenPoint
+// 屏幕转视口
+Camera.main.ScreenToViewportPoint;
+```
+
+
+
+### 插值运算
+
+```c#
+// 第一种  先快后慢的形式
+pos.x = Mathf.Lerp(pos.x, target.transform.position.x, Time.deltaTime * moveSpeed);
+// 第二种  匀速运动
+startPos = transform.position;
+targetPos = target.transform.position;
+time += Time.deltaTime;
+pos.x =  Mathf.Lerp(startPos.x, targetPos.x, time)
+```
+
+### 点乘
+
+https://blog.csdn.net/qq_40780420/article/details/107776300
+
+### 叉乘
+
+```c#
+// 假设向量 A和B 都在 XZ平面上
+// 向量A 叉乘 向量 B
+// y大于0 证明 B在A右侧
+// y小于0 证明 B在A左侧
+
+Vector3 C = Vector3.Cross(B.position, A.position);
+if (C.y > 0) print("A在B的右侧");
+else         print("A在B的左侧");
+```
+
+
+
+### Vector3插值运算
+
+1. 线性插值
+
+```c#
+public Transform target;    // 目标物体位置
+public Transform A;         // 先快后慢移动到 Target
+public Transform B;         // 匀速运动到 Target
+
+private Vector3 nowTarget;  // 当前 B 的位置
+
+private Vector3 startPos;   // 每次运行时 B 的起始位置
+private float   time;
+
+// Start is called before the first frame update
+private void Start() {
+    startPos = B.position;
+}
+
+// Update is called once per frame
+private void Update() {
+    // result = start + (end - start) * t
+
+    // 1.先快后慢 每帧改变start位置 位置无限接近 但不会得到end位置
+    A.position = Vector3.Lerp(A.position, target.position, Time.deltaTime);
+
+    // 2.匀速 每帧改变时间  当t>=1时 得到结果
+    // 这种匀速移动 当time>=1时  我改变了 目标位置后  它会直接瞬移到我们的目标位置
+    if (nowTarget != target.position) {
+        nowTarget = target.position;
+        time      = 0;
+        startPos  = B.position;
+    }
+    time       += Time.deltaTime;
+    B.position =  Vector3.Lerp(startPos, nowTarget, time);
+}
+```
+
+2. 球形插值
+
+![img](https://hexo-chenlf.oss-cn-shanghai.aliyuncs.com/img/202404112207366.png)
+
+```c#
+position = Vector3.Slerp(Vector3.right * 10, Vector3.left * 10 + Vector3.up * 0.1f, time * 0.01f);
+```
+
+
+
 # 四元数
+
+虽然欧拉角简单易理解，但是他的旋转表示不唯一，而且有万向节死锁问题，所以在计算机中一般使用四元数来表示三维空间旋转信息
+
+> 万向节死锁：欧拉角是基于x,y,z轴旋转的，x,y,z旋转轴有顺序层级，假设y>x>z,即给定的欧拉角先绕y轴、再按x轴、最后绕z轴旋转得到最终的旋转。但是绕y轴旋转可以影响其他两个也随之旋转，而绕z轴只作用于箭头，当y轴向和x轴向转到同一个平面就会造成万向节死锁，即绕y轴和绕z轴的旋转是一样的了
+> ![image-20240411204448116](https://hexo-chenlf.oss-cn-shanghai.aliyuncs.com/img/202404112044225.png)
+
+**四元数组成：**
+	因为欧拉角给定三个轴，且需要按顺序层级旋转最终造成万向节死锁，而四元数之所以没有万向节死锁，就是因为他是基于一个我们自定义的旋转轴（**相对自身坐标系**）只旋转一次我们定义的角度。所以四元数有一个标量（角度）和一个向量（旋转轴）组成
+
+​	在数学上四元数是一个简单的超辅舒，由一个实数和三个虚数组成，他的原理包含大量数学知识，因此只介绍基本构成和公式
+
+> 假设绕n轴（x,y,z），旋转β度:
+> 	Q = [ cos(β/2)， sin(β/2)n]		即 Q = [ cos(β/2)， sin(β/2)x, sin(β/2)y, sin(β/2)z]
+
+**Unity中的四元数初始化方法：**
+
+```c#
+Quaternion q = new Quaternion(sin(β/2)x, sin(β/2)y, sin(β/2)z, cos(β/2));	//一般不用，谁没事找事用这个
+Quaternion q = Quaternion.AngleAxis(β,Vector3.right);
+```
+
+
+
+**四元数和欧拉角转换：**
+
+```c#
+q.eulerAngles;//转欧拉角
+Quaternion.Euler(x,y,z);//转四元数
+```
+
+注：四元数相乘代表旋转四元数
+
+**单位四元数：**
+
+表示没有旋转，[1,(0,0,0)]和[-1,(0,0,0)]都是单位四元数，一般用来初始化对象
+
+```c#
+Instantiate(obj, Vector3.zero, Quaternion.identity);
+```
+
+**插值运算：**
+
+四元数提供如同Vector3的插值运算Lerp、Slerp,但是Vector3的Slerp表示球形插值，而四元数的Slerp和Lerp差不多，只是Lerp的速度更快但是如果旋转范围较大效果较差，所以建议使用Slerp进行运算。同样的也是用匀速和先快后慢两种用法
+
+**LookRotation:**
+
+给定目标在本地坐标系的方向向量，返回一个可以转向该目标方向的旋转量
+
+```c#
+transform.position = Quaternion.LookRotation(target.position - transform.position);
+```
+
+
+
+**四元数计算：**
+
+- 四元数相乘：两个四元数相乘得到一个新的四元数，代表两个旋转量的叠加相当于旋转
+- 四元数乘向量：返回一个旧向量旋转对应四元数旋转量的一个新的向量
+
+```C#
+//四元数相乘, 绕Y轴旋转45度
+transform.rotation = transform.rotation * Quaternion.AngleAxis(45,Vector3.up);
+//四元数乘向量, 有顺序，必须是四元数在前否则报错
+Vector3 v = Vector3.forward;
+v = Quaternion.AngleAxis(90,Vector3.up) * v;
+print(v); //(1,0,0)
+
+v = v * Quaternion.AngleAxis(90,Vector3.up);//报错
+```
+
 
 
 
