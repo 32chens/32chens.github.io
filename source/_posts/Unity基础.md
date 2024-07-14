@@ -830,14 +830,177 @@ v = v * Quaternion.AngleAxis(90,Vector3.up);//报错
 
 ### 延迟函数
 
+```c#
+// 1.延迟函数
+// Invoke
+// 参数一：函数名 字符串
+// 参数二：延迟时间 秒为单位
+Invoke(nameof(DelayDoSomething), 1);
 
+private void DelayDoSomething() {
+    print("延时执行的函数");
+}
+
+// 2.延迟重复执行函数
+// InvokeRepeating
+// 参数一：函数名字符串
+// 参数二：第一次执行的延迟时间
+// 参数三：之后每次执行的间隔时间
+InvokeRepeating(nameof(DelayRe), 5, 1);
+
+private void DelayRe() {
+    print("重复执行");
+}
+
+// 3.取消延迟函数
+// 3-1取消该脚本上的所有延时函数执行
+CancelInvoke();
+
+// 3-2指定函数名取消
+// 只要取消了指定延迟 不管之前该函数开启了多少次 延迟执行 都会统一取消
+CancelInvoke(nameof(DelayDoSomething));
+
+// 4.判断是否有延迟函数
+if (IsInvoking()) print("存在延迟函数");
+if (IsInvoking(nameof(DelayDoSomething))) print("存在延迟函数DelayDoSomething");
+```
+
+ 注意：
+
+1. [延时函数](https://so.csdn.net/so/search?q=延时函数&spm=1001.2101.3001.7020)第一个参数传入的是函数名字符串
+
+2. 延时函数没办法传入参数，只有包裹一层
+
+   例如，调用 TestFun 时，将参数传在 DelayDoSomething 中
+
+   调用其他对象 t 的方法时，也需要包裹一层
+
+3. 函数名必须是该脚本上申明的函数
+
+   ```c#
+   private void DelayDoSomething() {
+       TestFun(2);
+       
+       t.TestFun();
+   }
+   
+   private void TestFun(int i) {
+       print("传入参数" + i);
+   }
+   
+   private void TestFun() {
+       print("无参重载");
+   }
+   
+   ```
+
+   
 
 ### 协同程序
 
+ Unity 支持多线程，但是新开线程无法访问 Unity 相关对象的内容
 
+ 注意：Unity 中的多线程，要记住关闭
 
+协同程序简称[协程](https://so.csdn.net/so/search?q=协程&spm=1001.2101.3001.7020)，它是“假”的多线程，它不是多线程
 
+ 它的主要作用是将代码分时执行，不卡主线程
 
+ 简单理解，是把可能会让主线程卡顿的耗时的逻辑分时分步执行, 而不是一直在此等待
+
+ 主要使用场景：
+
+- 异步加载文件
+- 异步下载文件
+- 场景异步加载
+- 批量创建时防止卡顿
+
+ 区别：
+
+- 新开一个线程是独立的一个管道，和主线程并行执行
+- 新开一个协程是在原线程之上开启，进行逻辑分时分步执行
+
+协程的使用：
+
+```c#
+// 继承MonoBehavior的类 都可以开启 协程函数
+// 第一步：申明协程函数
+//   协程函数2个关键点
+//   1-1返回值为IEnumerator类型及其子类
+//   1-2函数中通过 yield return 返回值; 进行返回
+
+// 第二步：开启协程函数
+// 协程函数 是不能够 直接这样去执行的！！！！！！！
+// 这样执行没有任何效果
+// MyCoroutine(1, "123");
+
+// 常用开启方式
+// IEnumerator ie = MyCoroutine(1, "123");
+// StartCoroutine(ie);
+Coroutine c1 = StartCoroutine(MyCoroutine(1, "123"));
+Coroutine c2 = StartCoroutine(MyCoroutine(1, "123"));
+Coroutine c3 = StartCoroutine(MyCoroutine(1, "123"));
+
+// 第三步：关闭协程
+// 关闭所有协程
+StopAllCoroutines();
+
+// 关闭指定协程
+StopCoroutine(c1);
+
+// 关键点一： 协同程序（协程）函数 返回值 必须是 IEnumerator或者继承它的类型 
+private IEnumerator MyCoroutine(int i, string str) {
+    print(i);
+    // 关键点二： 协程函数当中 必须使用 yield return 进行返回
+    yield return null;
+    print(str);
+    yield return new WaitForSeconds(1f);
+    print("2");
+    yield return new WaitForFixedUpdate();
+    print("3");
+    // 主要会用来 截图时 会使用
+    yield return new WaitForEndOfFrame();
+
+    while (true) {
+        print("5");
+        yield return new WaitForSeconds(5f);
+    }
+}
+```
+
+**yield return 不同内容的含义:**
+
+```c#
+// 1.下一帧执行
+yield return 数字;
+yield return null;
+// 在Update和LateUpdate之间执行
+
+// 2.等待指定秒后执行
+yield return new WaitForSeconds(秒);
+// 在Update和LateUpdate之间执行
+
+// 3.等待下一个固定物理帧更新时执行
+yield return new WaitForFixedUpdate();
+// 在FixedUpdate和碰撞检测相关函数之后执行
+
+// 4.等待摄像机和GUI渲染完成后执行
+yield return new WaitForEndOfFrame();
+// 在LateUpdate之后的渲染相关处理完毕后之后
+
+// 5.一些特殊类型的对象 比如异步加载相关函数返回的对象
+// 之后讲解 异步加载资源 异步加载场景 网络加载时再讲解
+// 一般在Update和LateUpdate之间执行
+
+// 6.跳出协程
+yield break;
+```
+
+**协程受对象和组件失活销毁的影响**
+
+协程开启后
+ 组件和物体销毁，协程不执行
+ 物体失活协程不执行，组件失活协程执行
 
 
 
@@ -846,22 +1009,354 @@ v = v * Quaternion.AngleAxis(90,Vector3.up);//报错
 
 ### 特殊文件夹
 
+**（一）工程路径获取**
+
+```c#
+print(Application.dataPath);
+```
+
+注意：该方式获取到的路径 一般情况下只在编辑模式下使用，我们不会在实际发布游戏后还使用该路径，游戏发布过后 该路径就不存在了 
+
+**（二）Resources 资源文件夹**
+
+```c#
+print(Application.dataPath + "/Resources");
+```
+
+注意：需要我们自己创建， 一般不获取，只能使用Resources相关API进行加载，如果硬要获取可以用工程路径拼接
+
+作用：资源文件夹
+
+1. 需要通过 Resources 相关 API 动态加载的资源需要放在其中
+2. 该文件夹下所有文件都会被打包出去
+3. 打包时 Unity 会对其压缩加密
+4. 该文件夹打包后只读, 只能通过 Resources 相关 API 加载
+
+**（三）StreamingAssets 流动资源文件夹**
+
+```c#
+print(Application.streamingAssetsPath);
+```
+
+注意：需要我们自己将创建
+​作用：流文件夹
+
+1. 打包出去不会被压缩加密，可以任由我们摆布
+2. **移动平台只读，PC 平台可读可写**
+3. 可以放入一些需要自定义动态加载的初始资源
+
+**（四）PersistentDataPath 持久数据文件夹**
+
+```c#
+print(Application.persistentDataPath);
+```
+
+注意：不需要我们自己将创建
+​作用：固定数据文件夹
+
+1. 所有平台都可读可写
+2. 一般用于放置动态下载或者动态创建的文件，游戏中创建或者获取的文件都放在其中
+
+**（五）Plugins 插件文件夹**
+
+ 路径获取：一般不获取
+
+ 注意：需要我们自己将创建
+​ 作用：插件文件夹
+​ 不同平台的插件相关文件放在其中，比如 IOS 和 Android 平台
+
+**（六）Editor 编辑器文件夹**
+
+```c#
+// 路径获取：
+// 一般不获取
+// 如果硬要获取 可以用工程路径拼接
+print(Application.dataPath + "/Editor");
+```
+
+注意：需要我们自己将创建
+​作用：编辑器文件夹
+
+1. 开发 Unity 编辑器时，编辑器相关脚本放在该文件夹中
+2. 该文件夹中内容不会被打包出去
+
+**（七）默认资源文件夹 Standard Assets**
+
+ 路径获取：一般不获取
+
+ 注意：需要我们自己将创建
+​ 作用：默认资源文件夹
+​ 一般 Unity 自带资源都放在这个文件夹下，代码和资源优先被编译
+
+
+
 ### Resources资源同步加载
+
+Resources 资源动态加载的作用：
+
+- 通过代码动态加载 Resources 文件夹下指定路径资源
+- 避免繁琐的拖曳操作
+
+**（一）常用资源类型**
+
+1. 预设体对象——GameObject
+2. 音效文件——AudioClip
+3. 文本文件——TextAsset
+4. 图片文件——Texture
+5. 其它类型——需要什么用什么类型
+
+注意：预设体对象加载需要实例化，其它资源加载一般直接用
+
+**（二）资源同步加载——普通方法**
+
+ 在一个工程当中 Resources 文件夹可以有多个，通过 API 加载时，它会自己去这些同名的 Resources 文件夹中去找资源，
+ 打包时 这些Resources 文件夹 里的内容 都会打包在一起
+
+1. 加载预设体
+
+   ```c#
+   // 1.预设体对象 想要创建在场景上 记住实例化
+   // 第一步：要去加载预设体的资源文件(本质上 就是加载 配置数据 在内存中)
+   Object obj = Resources.Load("Cube");
+   // 第二步：如果想要在场景上 创建预设体 一定是加载配置文件过后 然后实例化
+   Instantiate(obj);
+   ```
+
+2. 加载音效资源
+
+   ```c#
+   public AudioSource audioS;
+   
+   // 2.音效资源
+   // 第一步：就是加载数据
+   Object obj3 = Resources.Load("Music/BKMusic");
+   // 第二步：使用数据 我们不需要实例化 音效切片 我们只需要把数据 赋值到正确的脚本上即可
+   audioS.clip = obj3 as AudioClip;
+   audioS.Play();
+   ```
+
+3. 加载文本资源
+
+   ```c#
+   // 3.文本资源
+   // 文本资源支持的格式
+   // .txt
+   // .xml
+   // .bytes
+   // .json
+   // .html
+   // .csv
+   // .....
+   TextAsset ta = Resources.Load("Txt/Test") as TextAsset;
+   
+   // 文本内容
+   print(ta.text);
+   
+   // 字节数据组
+   print(ta.bytes);
+   ```
+
+4. 加载图片
+
+   ```c#
+   Texture tex = Resources.Load("Tex/TestJPG") as Texture;
+   ```
+
+**（三）资源同名的解决方法**
+
+ Resources.Load 加载同名资源时:
+
+```c#
+private Texture tex;
+
+// 6-1加载指定类型的资源
+tex = Resources.Load("Tex/TestJPG", typeof(Texture)) as Texture;
+
+ta = Resources.Load("Tex/TestJPG", typeof(TextAsset)) as TextAsset;
+print(ta.text);
+
+// 6-2加载指定名字的所有资源
+Object[] objs = Resources.LoadAll("Tex/TestJPG");
+foreach (Object item in objs) {
+    if (item is Texture) { ... }
+    else if (item is TextAsset) { ... }
+}
+
+```
+
+**（四）资源同步加载——泛型方法**
+
+```c#
+TextAsset ta2 = Resources.Load<TextAsset>("Tex/TestJPG");
+print(ta2.text);
+
+tex = Resources.Load<Texture>("Tex/TestJPG");
+```
+
+
 
 ### Resources资源异步加载
 
-### Resources资源卸载
+异步加载可以帮助我们加载过大的资源不会造成程序卡顿，但是异步加载不能马上得到加载的资源，至少要等一帧
 
-
-
-# 异步加载资源和异步加载场景事件回调
+**（一）事件监听实现异步加载**
 
 ```c#
-Resource.LoadAsync<Texture>("Txt/TestJPG")
+// 1.通过异步加载中的完成事件监听 使用加载的资源
+ResourceRequest rq = Resources.LoadAsync<Texture>("Tex/TestJPG");
+// 马上进行一个 资源下载结束 的一个事件函数监听
+rq.completed += LoadOver;
+
+private void LoadOver(AsyncOperation rq) {
+    print("加载结束");
+    // asset 是资源对象 加载完毕过后 就能够得到它
+    tex = (rq as ResourceRequest)?.asset as Texture;
+}
+```
+
+注意：加载完成的回调函数参数是`AsyncOperation`类型
+
+**（二）协程实现异步加载**
+
+```c#
+// 2.通过协程 使用加载的资源
+StartCoroutine(Load());
+
+private IEnumerator Load() {
+    // 迭代器函数 当遇到yield return时  就会 停止执行之后的代码
+    // 然后 协程协调器 通过得到 返回的值 去判断 下一次执行后面的步骤 将会是何时
+    ResourceRequest rq = Resources.LoadAsync<Texture>("Tex/TestJPG");
+    
+    // Unity 会自己判断,加载完毕过后,才会继续执行后面的代码
+    yield return rq;
+    
+
+    // 判断资源是否加载结束
+    while (!rq.isDone) {
+        // 打印当前的 加载进度 
+        // 该进度 不会特别准确 过渡也不是特别明显
+        print(rq.progress);
+        yield return null;//每帧判断一次是否加载完毕
+    }
+    tex = rq.asset as Texture;
+}
+```
+
+
+
+### Resources资源卸载
+
+**（一）重复加载同一资源**
+
+Resources 加载一次资源过后，该资源就一直存放在内存中作为缓存，第二次加载时发现缓存中存在该资源，会直接取出来进行使用
+所以多次重复加载不会浪费内存，但是会浪费性能（每次加载都会去查找取出，始终伴随一些性能消耗）
+
+**（二）手动释放缓存中的资源**
+
+1. 卸载指定资源
+
+   ```c#
+   GameObject obj = Resources.Load<GameObject>("Cube");
+   Texture te = Resources.Load<Texture>("Tex/TestJPG");
+   // 即使是没有实例化的 GameObject对象也不能进行卸载
+   //Resources.UnloadAsset(obj);
+   Resources.UnloadAsset(te);
+   ```
+
+   注意：
+   该方法不能释放 GameObject对象，因为它会用于实例化对象，**只能用于一些不需要实例化的内容**， 比如 图片 和 音效 文本等等，一般情况下， 我们很少单独使用它。
+
+2. 卸载未使用的资源
+
+   ```c#
+   Resources.UnloadUnusedAssets();
+   GC.Collect();
+   ```
+
+   注意：一般在过场景时和GC一起使用
+
+# 场景异步加载事件回调
+
+同步加载场景
+
+```c#
+SceneManager.LoadScene("Name");
+```
+
+**异步场景切换**
+
+```c#
 SceneManager.LoadSceneAsync("scene1")
 ```
 
-可以使用异步加载的返回值的**事件**存储一个回调函数，也可以使用协程，在协程函数中异步加载，结束条件为`yield return [异步加载的返回值]`，这样在yield和异步加载操作之间我们还可以执行一些其他操作。这两种方法都要到下一帧才会执行回调函数.
+ 场景异步加载和资源异步加载几乎一致，有两种方式：
+
+1. 事件回调
+	```c#
+    // 1.通过事件回调函数 异步加载
+    AsyncOperation ao = SceneManager.LoadSceneAsync("Name");
+    // 当场景异步加载结束后 就会自动调用该事件函数 我们如果希望在加载结束后 做一些事情 那么久可以在该函数中
+    // 写处理逻辑
+    ao.completed += (a) => print("加载结束");
+	
+    ao.completed += LoadOver;
+	
+    private void LoadOver(AsyncOperation ao) {
+        print("LoadOver");
+    }
+	```
+
+2. 协程
+
+   ```c#
+   // 2.通过协程异步加载
+   // 需要注意的是 加载场景会把当前场景上 没有特别处理的对象 都删除了
+   // 所以 协程中的部分逻辑 可能是执行不了的 
+   // 解决思路
+   // 让处理场景加载的脚本依附的对象 过场景时 不被移除
+   
+   // 该脚本依附的对象 过场景时 不会被 移除
+   DontDestroyOnLoad(gameObject);
+   
+   StartCoroutine(LoadScene("Name"));
+   
+   private IEnumerator LoadScene(string name) {
+       // 第一步
+       // 异步加载场景
+       AsyncOperation ao = SceneManager.LoadSceneAsync(name);
+       // Unity内部的 协程协调器 发现是异步加载类型的返回对象 那么就会等待
+       // 等待异步加载结束后 才会继续执行 迭代器函数中后面的步骤
+       print("异步加载过程中 打印的信息");
+       // 协程的好处 是异步加载场景时 我可以在加载的同时 做一些别的逻辑
+       // yield return ao;
+       // 第二步
+       print("异步加载结束后 打印的信息");
+   
+       // 比如 我们可以在异步加载过程中 去更新进度条
+       // 第一种 就是利用 场景异步加载 的进度 去更新 但是 不是特别准确 一般也不会直接用
+       // while(!ao.isDone)
+       // {
+       //     print(ao.progress);
+       //     yield return null;
+       // }
+   
+       // 离开循环后 就会认为场景加载结束
+       // 可以把进度条顶满 然后 隐藏进度条
+   
+       // 第二种 就是根据你游戏的规则 自己定义 进度条变化的条件
+       yield return ao;
+       // 场景加载结束 更新20%进度
+       // 接着去加载场景中 的其它信息
+       // 比如
+       // 动态加载怪物
+       // 这时 进度条 再更新20%
+       // 动态加载 场景模型
+       // 这时 就认为 加载结束了 进度条顶满 
+       // 隐藏进度条
+   }
+   ```
+
+   
 
 切换场景会默认销毁当前场景中的所有游戏对象，如果使用协程那么yield后的代码可能就因为游戏物体被销毁了而无法执行，可以调用 MonoBehaviour 的 DontDestroyOnLoad 方法，如下：
 
@@ -871,7 +1366,9 @@ DontDestroyOnLoad(this.gameObject);
 
 
 
-# LineRenderer
+# LineRenderer组件
+
+
 
 
 
